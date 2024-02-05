@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "oven.bun-vscode",
+    "dbaeumer.vscode-eslint",
+    "tamasfe.even-better-toml"
+  ]
+}

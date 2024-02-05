@@ -1,0 +1,6 @@
+["publish"]
+commands = ["publish", "publ"]
+scripts = ['''
+    docker build -t kecream/loongbao:latest .
+    && docker push kecream/loongbao:latest
+    ''']

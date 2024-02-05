@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "ESNext"
+    ],
+    "outDir": "./package/client/generate",
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
+    "composite": true,
+    "strict": true,
+    "downlevelIteration": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "jsx": "preserve",
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+    "types": [
+      "bun-types"
+    ]
+  },
+  "include": [
+    // only these files will be packaged as .d.ts files and placed in /packages/client.
+    "src/app/**/api.ts",
+    "src/bootstrap/**/*.ts",
+    "generate/**/*.ts",
+    "src/app/context.ts",
+    "src/app/fail-code.ts",
+    "src/app/logger.ts",
+    "src/app/meta.ts",
+    "src/app/test.ts",
+  ],
+}
