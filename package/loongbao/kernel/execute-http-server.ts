@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { createId } from "@paralleldrive/cuid2";
 import { _afterHTTPRequestMiddlewares, _beforeHTTPResponseMiddlewares, configFramework, loggerPushTags, loggerSubmit, useLogger, loggerSubmitAll, runtime } from "..";
 import schema from "../../../generate/api-schema";
@@ -161,7 +162,7 @@ export async function executeHttpServer(app: LoongbaoApp, options: ExecuteHttpSe
         const result = await app.execute(pathstr, params, headers, {
           executeId,
           detail,
-          disableLoggerAutoSubmit: true
+          fromServer: true
         });
 
         if (response.body === "") {

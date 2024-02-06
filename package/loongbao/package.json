@@ -2,7 +2,7 @@
   "name": "loongbao",
   "type": "module",
   "module": "index.ts",
-  "version": "0.1.26",
+  "version": "0.1.28",
   "peerDependencies": {
     "typescript": "^5.3.3"
   },
@@ -15,6 +15,7 @@
     "@southern-aurora/tson": "1.0.7",
     "ejs": "^3.1.9",
     "ioredis": "^5.3.2",
+    "redis": "^4.6.13",
     "typia": "^5.4.5",
     "walk-sync": "^3.0.0"
   },

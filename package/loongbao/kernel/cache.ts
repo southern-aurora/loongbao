@@ -1,4 +1,3 @@
-import { type Redis } from "ioredis";
 import { configFramework, defineFail, useLogger } from "..";
 import { TSON } from "@southern-aurora/tson";
 
@@ -6,26 +5,26 @@ export type CacheEntity<T> = T;
 
 async function createRedisClient() {
   // node-redis
-  // const NodeRedis = await import("redis");
-  // const redisClient = await NodeRedis.createClient({
-  //   url: configFramework.redisUrl
-  // }).connect();
+  const NodeRedis = await import("redis");
+  const redisClient = await NodeRedis.createClient({
+    url: configFramework.redisUrl
+  }).connect();
 
   // ioredis
-  const IORedis = await import("ioredis");
-  const redisClient = new IORedis.Redis(configFramework.redisUrl, {
-    disconnectTimeout: 2
-  });
-  redisClient.on("error", (error) => {
-    const logger = useLogger("global");
-    logger.error("ioredis error", error);
-  });
+  // const IORedis = await import("ioredis");
+  // const redisClient = new IORedis.Redis(configFramework.redisUrl, {
+  //   disconnectTimeout: 2
+  // });
+  // redisClient.on("error", (error) => {
+  //   const logger = useLogger("global");
+  //   logger.error("ioredis error", error);
+  // });
 
   return redisClient;
 }
 
 let redisClient: Awaited<ReturnType<typeof createRedisClient>> | undefined;
-export async function useRedisClient(): Promise<Redis> {
+export async function useRedisClient() {
   if (redisClient === undefined) {
     setTimeout(() => {
       if (redisClient !== undefined) return;
@@ -50,11 +49,11 @@ export function defineCache<Entity extends CacheEntity<unknown>>(key: string) {
       const redisClient = await useRedisClient();
 
       // node-redis
-      // await redisClient.set(`${key}`, TSON.stringify(value), {
-      //   EX: TTL
-      // });
+      await redisClient.set(`${key}`, TSON.stringify(value), {
+        EX: TTL
+      });
       // ioredis
-      await redisClient.set(`${key}`, TSON.stringify(value), "EX", TTL);
+      // await redisClient.set(`${key}`, TSON.stringify(value), "EX", TTL);
     },
     async del() {
       const redisClient = await useRedisClient();
@@ -75,11 +74,11 @@ export function defineNamespaceCache<Entity extends CacheEntity<unknown>>(key: s
       const redisClient = await useRedisClient();
 
       // node-redis
-      // await redisClient.set(`${key}:${namespace}`, TSON.stringify(value), {
-      //   EX: TTL
-      // });
+      await redisClient.set(`${key}:${namespace}`, TSON.stringify(value), {
+        EX: TTL
+      });
       // ioredis
-      await redisClient.set(`${key}:${namespace}`, TSON.stringify(value), "EX", TTL);
+      // await redisClient.set(`${key}:${namespace}`, TSON.stringify(value), "EX", TTL);
     },
     async del(namespace: string) {
       const redisClient = await useRedisClient();
