@@ -3,12 +3,11 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { argv, cwd, exit } from "node:process";
+import { argv, cwd, exit, stdout } from "node:process";
 import { exec } from "../util/exec";
 import { join } from "node:path";
 import { watch } from "node:fs";
 import { env } from "bun";
-import { TSON } from "..";
 
 const rootPath = cwd();
 const method = argv[2] as keyof typeof commands;
@@ -63,14 +62,31 @@ const commands = {
   async start() {
     await exec(rootPath, ["bun", "./index.ts"]);
   },
-  async test() {
-    await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/generate.ts"]);
-    await exec(rootPath, ["bun", "./index.ts"], {
-      env: {
-        ...env,
-        LOONGBAO_TEST: TSON.stringify(1)
-      }
-    });
+  async test(files?: string, reserved?: string) {
+    if (reserved !== "1") {
+      // Normal test
+      await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/generate.ts"]);
+      await exec(rootPath, ["bun", "./index.ts"], {
+        env: {
+          ...env,
+          LOONGBAO_TEST: files ?? "1"
+        }
+      });
+    } else {
+      // Keep after testing, the terminal never exits and is usually used for various IDE extensions.
+      try {
+        await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/generate.ts"]);
+        await exec(rootPath, ["bun", "./index.ts"], {
+          env: {
+            ...env,
+            LOONGBAO_TEST: files ?? "1"
+          }
+        });
+      } catch (error) {}
+      // Prevent process from exiting
+      // Cannot use a never-ending Promise, as it will be garbage collected.
+      while (true) await Bun.sleep(Number.MAX_SAFE_INTEGER);
+    }
   },
   async "build:client"() {
     await exec(join(rootPath, "package", "client"), ["bun", "i"]);

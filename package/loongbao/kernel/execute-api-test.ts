@@ -3,11 +3,13 @@ import { exit } from "node:process";
 import schema from "../../../generate/api-schema";
 import { type LoongbaoApp } from "..";
 
-export const executeApiTest = async <Paths extends Array<keyof (typeof schema)["apiTestsSchema"]>>(app: LoongbaoApp, paths: Paths | 1) => {
+export const executeApiTest = async <Paths extends Array<keyof (typeof schema)["apiTestsSchema"]>>(app: LoongbaoApp, paths: Paths | string | 1) => {
   console.log(`🧊 Loongbao Api Testing..\n`);
 
-  if (paths === 1) {
+  if (paths === "1" || paths === 1) {
     paths = Object.keys(schema.apiTestsSchema) as unknown as Paths;
+  } else if (typeof paths === "string") {
+    paths = JSON.parse(paths) as Paths;
   }
 
   const tests = [];
@@ -54,4 +56,5 @@ export const executeApiTest = async <Paths extends Array<keyof (typeof schema)["
 
   console.log(`\n✅ All tests passed.`);
   console.log(`🧊 Loongbao Api Testing took ${((endedAt - startedAt) / 1000).toFixed(2)}s\n`);
+  exit(0);
 };
