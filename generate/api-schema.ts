@@ -1,5 +1,5 @@
 /**
- * ⚠️This file is generated and modifications will be overwritten
+ * ⚠️ This file is generated and modifications will be overwritten
  */
  
 // api

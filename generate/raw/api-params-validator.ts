@@ -10,8 +10,8 @@ import type * as helloWorld$say from '../../src/app/hello-world/say'
 
 export default {
   validate: {
-    'hello-world/say-2': async (params: unknown) => typia.misc.validatePrune<Parameters<typeof helloWorld$say2['api']['action']>[0]>(params),
-    'hello-world/say': async (params: unknown) => typia.misc.validatePrune<Parameters<typeof helloWorld$say['api']['action']>[0]>(params),
+    'hello-world/say-2': () => import('./app/hello-world/say-2.ts'),
+    'hello-world/say': () => import('./app/hello-world/say.ts'),
     
   },
 }

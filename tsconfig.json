@@ -21,6 +21,11 @@
     "allowJs": true,
     "types": [
       "bun-types"
+    ],
+    "plugins": [
+      {
+        "transform": "typia/lib/transform"
+      }
     ]
   },
   "include": [

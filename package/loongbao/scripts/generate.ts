@@ -30,6 +30,7 @@ export async function generateSchema() {
   // Make sure that the existing directories are all present
   existsSync(join("generate")) || mkdirSync(join("generate"));
   existsSync(join("generate", "raw")) || mkdirSync(join("generate", "raw"));
+  existsSync(join("generate", "raw", "app")) || mkdirSync(join("generate", "raw", "app"));
 
   // Delete the files generated in the past and regenerate them
   try {
@@ -119,6 +120,28 @@ export default {
   );
 
   // api
+  for (const path of templateVars.apiPaths) {
+    const filePath = join(cwd(), "generate", "raw", "app", path);
+    const dirPath = join(cwd(), "generate", "raw", "app", path).split("/").slice(0, -1).join("/");
+    if (!existsSync(dirPath)) {
+      mkdirSync(dirPath, { recursive: true });
+    }
+    let importPath = "../../../";
+    console.warn(path.split("/"));
+
+    for (let i = 0; i < path.split("/").length - 1; i++) {
+      importPath = importPath + "../";
+    }
+    importPath = importPath + "src/app";
+    const template = `
+import typia from "typia";
+import type * as <%= utils.camel(path.slice(0, -3).replaceAll('/', '$')) %> from '${importPath}/<%= path.slice(0, -3) %>';
+
+export default async (params: unknown) => typia.misc.validatePrune<Parameters<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>[0]>(params)
+    `.trim();
+
+    await writeFile(filePath, ejs.render(template, { ...templateVars, path }));
+  }
   const apiParamsValidatorTemplate = `/**
  * ⚠️This file is generated and modifications will be overwritten
  */
@@ -130,7 +153,7 @@ import typia from 'typia'
 <% } %>
 export default {
   ${"validate"}: {
-    <% for (const path of apiPaths) { %>'<%= utils.hyphen(path.slice(0, -${3})) %>': async (params: unknown) => typia.misc.validatePrune<Parameters<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>[0]>(params),
+    <% for (const path of apiPaths) { %>'<%= utils.hyphen(path.slice(0, -${3})) %>': () => import('./app/<%= utils.hyphen(path) %>'),
     <% } %>
   },
 }
