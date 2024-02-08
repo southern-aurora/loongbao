@@ -1,6 +1,6 @@
-import type ApiParams from "../generate/api-schema";
+import type apiParamsValidator from "../generate/api-params-validator";
 
-export const routerHandler = async (path: string, fullurl: URL): Promise<false | keyof (typeof ApiParams)["apiMethodsSchema"]> => {
+export const routerHandler = async (path: string, fullurl: URL): Promise<false | keyof (typeof apiParamsValidator)["apiMethodsSchema"]> => {
   // ...
   return false;
 };

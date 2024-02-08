@@ -83,9 +83,21 @@ const commands = {
           }
         });
       } catch (error) {}
-      // Prevent process from exiting
-      // Cannot use a never-ending Promise, as it will be garbage collected.
-      while (true) await Bun.sleep(Number.MAX_SAFE_INTEGER);
+      stdout.write("\x1B[2mpress (q) to quit..");
+      while (true) {
+        const result = await new Promise((resolve) => {
+          const wasRaw = process.stdin.isRaw;
+          process.stdin.setRawMode(true);
+          process.stdin.resume();
+          process.stdin.once("data", (data) => {
+            process.stdin.pause();
+            process.stdin.setRawMode(wasRaw);
+            resolve(data.toString());
+          });
+        });
+
+        if (result === "q") exit(0);
+      }
     }
   },
   async "build:client"() {

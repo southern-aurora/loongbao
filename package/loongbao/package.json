@@ -2,7 +2,7 @@
   "name": "loongbao",
   "type": "module",
   "module": "index.ts",
-  "version": "0.1.35",
+  "version": "0.1.37",
   "peerDependencies": {
     "typescript": "^5.3.3"
   },

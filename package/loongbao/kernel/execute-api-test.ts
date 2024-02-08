@@ -9,7 +9,11 @@ export const executeApiTest = async <Paths extends Array<keyof (typeof schema)["
   if (paths === "1" || paths === 1) {
     paths = Object.keys(schema.apiTestsSchema) as unknown as Paths;
   } else if (typeof paths === "string") {
-    paths = JSON.parse(paths) as Paths;
+    if (!paths.startsWith("[")) {
+      paths = [paths] as Paths;
+    } else {
+      paths = JSON.parse(paths) as Paths;
+    }
   }
 
   const tests = [];
@@ -35,9 +39,9 @@ export const executeApiTest = async <Paths extends Array<keyof (typeof schema)["
           }, cs.timeout ?? 6000);
           await cs.handler({
             execute: async (params: any, headers?: any, options?: any) => app.execute(path, params, headers ?? {}, options),
-            reject: (message: string) => {
+            reject: (message?: string) => {
               console.error(`------`);
-              console.error(`❌ REJECT -- ${message}`);
+              console.error(`❌ REJECT -- ${message ?? "Test not satisfied"}`);
               console.error(`   ${cs.name} | Path: src/app/${path as string}.ts | Case: ${i} | Time: ${new Date().getTime() - csStartedAt}ms`);
               console.error(`------`);
               exit(1);

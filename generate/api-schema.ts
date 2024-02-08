@@ -6,10 +6,10 @@
 import type * as helloWorld$say2 from '../src/app/hello-world/say-2'
 import type * as helloWorld$say from '../src/app/hello-world/say'
 
-import _apiParams from './products/api-params'
+import _apiParamsValidator from './products/api-params-validator'
 
 export default {
-  apiParams: _apiParams,
+  apiParamsValidator: _apiParamsValidator,
   apiMethodsSchema: {
     'hello-world/say-2': () => ({ module: import('../src/app/hello-world/say-2') }),
     'hello-world/say': () => ({ module: import('../src/app/hello-world/say') }),

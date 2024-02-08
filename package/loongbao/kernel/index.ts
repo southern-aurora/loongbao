@@ -142,7 +142,7 @@ async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema
 
     // check type
     // @ts-ignore
-    if (Bun.env.PARAMS_VALIDATE !== "false") _validate(await schema.apiParams.validate[path](params));
+    if (Bun.env.PARAMS_VALIDATE !== "false") _validate(await schema.apiParamsValidator.validate[path](params));
 
     // execute api
     // @ts-ignore

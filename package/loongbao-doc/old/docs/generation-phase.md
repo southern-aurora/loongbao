@@ -18,4 +18,4 @@ Loongbao 在正式启动前，会进入生成阶段。
 
 - 单层扫描您的 `/src/bootstrap` 目录，并将您的 Bootstrap 的概要，生成在 `/generate/bootstrap-schema.ts` 文件中。每次 Loongbao 启动时，会尝试执行您所有的 Bootstrap 中的代码。
 
-- 将您所有的的 API 的所有的 params 的校验代码，生成在 `/generate/products/api-params.ts` 文件中。由它来保障，您的 API 参数的类型安全与数据校验。
+- 将您所有的的 API 的所有的 params 的校验代码，生成在 `/generate/products/api-params-validator.ts` 文件中。由它来保障，您的 API 参数的类型安全与数据校验。
