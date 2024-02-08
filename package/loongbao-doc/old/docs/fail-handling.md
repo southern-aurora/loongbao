@@ -38,7 +38,7 @@ throw defineFail("not-found", undefined);
 ```ts
 // file: /src/fail-code.ts
 
-import type { FrameworkEnums } from "loongbao";
+import type { LoongbaoFailCode } from "loongbao";
 
 export const failCode = {
   "network-error": () => "Network Error",
@@ -50,7 +50,7 @@ export const failCode = {
   "business-fail": (message: string) => `${message}`,
   // You can add your own mistakes here
   // ...
-} satisfies FrameworkEnums;
+} satisfies LoongbaoFailCode;
 ```
 
 ## 参数
@@ -68,7 +68,7 @@ throw defineFail("access-exceeded", { path: "/foo/bar", counter: 64 });
 export const failCode = {
   "access-exceeded": (p: { path: string; counter: number }) =>
     `You are visiting too frequently. This path "${p.path}" is only allowed to be accessed ${p.counter} times.`,
-} satisfies FrameworkEnums;
+} satisfies LoongbaoFailCode;
 ```
 
 同时，这些参数也会被返回给客户端，以便客户端能够获取并进一步处理它们。最终，客户端会收到类似下方的响应，包括了拼接好的 `message` 和 `data`：

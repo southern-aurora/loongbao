@@ -24,6 +24,7 @@ async function createRedisClient() {
 }
 
 let redisClient: Awaited<ReturnType<typeof createRedisClient>> | undefined;
+
 export async function useRedisClient() {
   if (redisClient === undefined) {
     setTimeout(() => {

@@ -44,7 +44,7 @@ export async function generateSchema() {
   // Write a basic framework to ensure that there are no errors when reading later
   const apiSchemaSkeleton = `
   export default {
-    apiParamsValidator: {},
+    apiValidator: {},
     apiMethodsSchema: {},
     apiMethodsTypeSchema: {},
   }
@@ -84,6 +84,30 @@ export async function generateSchema() {
         templateVars.apiTestPaths.push(path);
       }
     }
+
+    // typia
+    const filePath = join(cwd(), "generate", "raw", "app", path);
+    const dirPath = join(cwd(), "generate", "raw", "app", path).split("/").slice(0, -1).join("/");
+    if (!existsSync(dirPath)) {
+      mkdirSync(dirPath, { recursive: true });
+    }
+    let importPath = "../../../";
+
+    for (let i = 0; i < path.split("/").length - 1; i++) {
+      importPath = importPath + "../";
+    }
+    importPath = importPath + "src/app";
+    const template = `
+import typia from "typia";
+import { ExecuteResultSuccess${module?.api?.meta?.enableResultsValidate ? ", _validate" : ""} } from "loongbao";
+import { type TSONEncode } from "@southern-aurora/tson";
+import type * as <%= utils.camel(path.slice(0, -3).replaceAll('/', '$')) %> from '${importPath}/<%= path.slice(0, -3) %>';
+
+export const params = async (params: any) => typia.misc.validatePrune<Parameters<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>[0]>(params);
+export const HTTPResults = async (results: any) => { type T = TSONEncode<ExecuteResultSuccess<Awaited<ReturnType<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>>>>; ${module?.api?.meta?.enableResultsValidate ? "_validate(typia.validate<T>(results));" : ""} return typia.json.stringify<T>(results); };
+`.trim();
+
+    await writeFile(filePath, ejs.render(template, { ...templateVars, path }));
   }
 
   await writeFile(
@@ -93,14 +117,14 @@ export async function generateSchema() {
 /**
  * ⚠️ This file is generated and modifications will be overwritten
  */
- 
+
 // api
 <% for (const path of ${"apiPaths"}) { %>import type * as <%= utils.camel(path.slice(0, -3).replaceAll('/', '$')) %> from '${"../src/app"}/<%= path.slice(0, -3) %>'
 <% } %>
-import _apiParamsValidator from './products/api-params-validator'
+import _apiValidator from './${Bun.env.PARAMS_VALIDATE !== "false" ? "products" : "raw"}/api-validator'
 
 export default {
-  apiParamsValidator: _apiParamsValidator,
+  apiValidator: _apiValidator,
   ${"apiMethodsSchema"}: {
     <% for (const path of apiPaths) { %>'<%= utils.hyphen(path.slice(0, -${3})) %>': () => ({ module: import('../src/app/<%= path.slice(0, -${3}) %>') }),
     <% } %>
@@ -120,49 +144,23 @@ export default {
   );
 
   // api
-  for (const path of templateVars.apiPaths) {
-    const filePath = join(cwd(), "generate", "raw", "app", path);
-    const dirPath = join(cwd(), "generate", "raw", "app", path).split("/").slice(0, -1).join("/");
-    if (!existsSync(dirPath)) {
-      mkdirSync(dirPath, { recursive: true });
-    }
-    let importPath = "../../../";
-    console.warn(path.split("/"));
-
-    for (let i = 0; i < path.split("/").length - 1; i++) {
-      importPath = importPath + "../";
-    }
-    importPath = importPath + "src/app";
-    const template = `
-import typia from "typia";
-import type * as <%= utils.camel(path.slice(0, -3).replaceAll('/', '$')) %> from '${importPath}/<%= path.slice(0, -3) %>';
-
-export default async (params: unknown) => typia.misc.validatePrune<Parameters<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>[0]>(params)
-    `.trim();
-
-    await writeFile(filePath, ejs.render(template, { ...templateVars, path }));
-  }
-  const apiParamsValidatorTemplate = `/**
+  const apiValidatorTemplate = `/**
  * ⚠️This file is generated and modifications will be overwritten
  */
 
-import typia from 'typia'
-
-// api
-<% for (const path of ${"apiPaths"}) { %>import type * as <%= utils.camel(path.slice(0, -3).replaceAll('/', '$')) %> from '${"../../src/app"}/<%= path.slice(0, -3) %>'
-<% } %>
 export default {
+  generatedAt: ${new Date().getTime()},
   ${"validate"}: {
     <% for (const path of apiPaths) { %>'<%= utils.hyphen(path.slice(0, -${3})) %>': () => import('./app/<%= utils.hyphen(path) %>'),
     <% } %>
   },
 }
 `.trim();
-  await writeFile(join(cwd(), "generate", "raw", "api-params-validator.ts"), ejs.render(apiParamsValidatorTemplate, templateVars));
+  await writeFile(join(cwd(), "generate", "raw", "api-validator.ts"), ejs.render(apiValidatorTemplate, templateVars));
 
   if (Bun.env.PARAMS_VALIDATE !== "false") {
     await new Promise((resolve) =>
-      nodeExec("bunx typia generate --input generate/raw --output generate/products --project tsconfig.json", (e) => {
+      nodeExec("bun run ./node_modules/typia/lib/executable/typia.js generate --input generate/raw --output generate/products --project tsconfig.json", (e) => {
         resolve(e);
       })
     );

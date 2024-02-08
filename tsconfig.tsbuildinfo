@@ -105,7 +105,7 @@
       "./node_modules/typia/lib/TypeGuardError.d.ts",
       "./node_modules/typia/lib/module.d.ts",
       "./node_modules/typia/lib/index.d.ts",
-      "./generate/products/api-params-validator.ts",
+      "./generate/products/api-validator.ts",
       "./generate/api-schema.ts",
       "./node_modules/loongbao/kernel/context.ts",
       "./node_modules/loongbao/kernel/middleware.ts",
@@ -697,7 +697,7 @@
       "./index.ts",
       "./src/test.ts",
       "./src/config/app.ts",
-      "./generate/raw/api-params-validator.ts",
+      "./generate/raw/api-validator.ts",
       "./node_modules/bun-types/types.d.ts"
     ],
     "fileInfos": [
@@ -14234,7 +14234,7 @@
       125,
       695
     ],
-    "latestChangedDtsFile": "./generate/raw/api-params-validator.d.ts"
+    "latestChangedDtsFile": "./generate/raw/api-validator.d.ts"
   },
   "version": "5.2.2"
 }

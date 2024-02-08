@@ -18,7 +18,8 @@ export const api = defineApi({
     }
 
     return {
-      youSay: message
+      youSay: message,
+      tmp: new Date() as unknown as number
     };
   }
 });

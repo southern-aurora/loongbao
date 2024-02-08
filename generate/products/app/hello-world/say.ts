@@ -1,6 +1,8 @@
 import typia from "typia";
+import { ExecuteResultSuccess } from "loongbao";
+import { type TSONEncode } from "@southern-aurora/tson";
 import type * as helloWorld$say from "../../../../src/app/hello-world/say";
-export default async (params: unknown) => ((input: any): typia.IValidation<Parameters<typeof helloWorld$say['api']['action']>[0]> => { const validate = (input: any): typia.IValidation<Parameters<typeof helloWorld$say['api']['action']>[0]> => {
+export const params = async (params: any) => ((input: any): typia.IValidation<Parameters<typeof helloWorld$say['api']['action']>[0]> => { const validate = (input: any): typia.IValidation<Parameters<typeof helloWorld$say['api']['action']>[0]> => {
     const errors = [] as any[];
     const __is = (input: any): input is Parameters<typeof helloWorld$say['api']['action']>[0] => {
         const $io0 = (input: any): boolean => undefined === input.by || "string" === typeof input.by && /^[a-z]*$/.test(input.by);
@@ -47,3 +49,9 @@ export default async (params: unknown) => ((input: any): typia.IValidation<Param
         $po0(input);
 }; const output = validate(input); if (output.success)
     prune(input); return output; })(params);
+export const HTTPResults = async (results: any) => { type T = TSONEncode<ExecuteResultSuccess<Awaited<ReturnType<typeof helloWorld$say['api']['action']>>>>; return ((input: T): string => {
+    const $io1 = (input: any): boolean => "string" === typeof input.youSay && "number" === typeof input.tmp;
+    const $string = (typia.json.stringify as any).string;
+    const $so0 = (input: any): any => `{"executeId":${$string(input.executeId)},"success":${input.success},"data":${`{"youSay":${$string((input.data as any).youSay)},"tmp":${(input.data as any).tmp}}`}}`;
+    return $so0(input);
+})(results); };

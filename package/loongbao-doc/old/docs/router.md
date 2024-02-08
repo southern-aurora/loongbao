@@ -17,9 +17,9 @@
 在几乎所有情况下，您应该使用 Loongbao 为您自动生成的路由。只有在特殊情况下，您才需要自定义您的路由。此时，您可以编辑 `/src/router.ts` 文件。其内容类似如下这样：
 
 ```ts
-import type apiParamsValidator from "../generate/products/api-params-validator";
+import type apiValidator from "../generate/products/api-validator";
 
-export const routerHandler = async (path: string, fullurl: URL): Promise<false | keyof (typeof apiParamsValidator)["params"]> => {
+export const routerHandler = async (path: string, fullurl: URL): Promise<false | keyof (typeof apiValidator)["params"]> => {
   // ...
   return false;
 };

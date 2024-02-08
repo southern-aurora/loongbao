@@ -2,7 +2,7 @@
   "name": "loongbao",
   "type": "module",
   "module": "index.ts",
-  "version": "0.1.37",
+  "version": "0.1.39",
   "peerDependencies": {
     "typescript": "^5.3.3"
   },
@@ -12,7 +12,7 @@
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",
     "@poech/camel-hump-under": "^1.1.0",
-    "@southern-aurora/tson": "1.0.7",
+    "@southern-aurora/tson": "2.0.1",
     "ejs": "^3.1.9",
     "ioredis": "^5.3.2",
     "redis": "^4.6.13",

@@ -1,4 +1,4 @@
-import type { FrameworkEnums } from "loongbao";
+import type { LoongbaoFailCode } from "loongbao";
 
 export const failCode = {
   "network-error": () => "Network Error",
@@ -9,4 +9,4 @@ export const failCode = {
   "business-fail": (message: string) => `${message}`
   // You can add your own mistakes here
   // ...
-} satisfies FrameworkEnums;
+} satisfies LoongbaoFailCode;

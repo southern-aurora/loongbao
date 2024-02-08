@@ -8,6 +8,7 @@ import type { ExecuteId, HTTPRequest, HTTPResponse, LoongbaoApp } from "..";
 import { hanldeCatchError } from "../util/handle-catch-error";
 import process, { exit } from "node:process";
 import { TSON } from "@southern-aurora/tson";
+import { _validate } from "./validate";
 
 export type ExecuteHttpServerOptions = {
   /**
@@ -93,15 +94,7 @@ export async function executeHttpServer(app: LoongbaoApp, options: ExecuteHttpSe
             loggerPushTags(executeId, {
               body: rawbody || "no body"
             });
-            response.body = TSON.stringify({
-              executeId,
-              success: false,
-              fail: {
-                code: "not-found",
-                message: failCode["not-found"](),
-                data: undefined
-              }
-            });
+            response.body = `{"executeId":"${executeId}","success":false,"fail":{"code":"not-found","message":${JSON.stringify(failCode["not-found"]())}}}`;
 
             loggerPushTags(executeId, {
               status: response.status,
@@ -114,7 +107,7 @@ export async function executeHttpServer(app: LoongbaoApp, options: ExecuteHttpSe
 
             return new Response(response.body, response);
           }
-          pathstr = redirectPath;
+          pathstr = redirectPath as typeof pathstr;
         }
 
         loggerPushTags(executeId, {
@@ -166,7 +159,11 @@ export async function executeHttpServer(app: LoongbaoApp, options: ExecuteHttpSe
         });
 
         if (response.body === "") {
-          response.body = response.body + TSON.stringify(result);
+          // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-explicit-any
+          const resultTSONed: any = Bun.env.PARAMS_VALIDATE !== "false" ? await (await schema.apiValidator.validate[pathstr]()).HTTPResults(TSON.encode(result)) : TSON.stringify(result);
+          console.warn(resultTSONed);
+
+          response.body = response.body + resultTSONed;
         } else if (response.body === undefined || response.body === null) {
           response.body = "";
         }

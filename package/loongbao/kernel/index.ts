@@ -11,7 +11,7 @@ import { _afterExecuteMiddlewares, _beforeExecuteMiddlewares } from "../kernel/m
 import { type ExecuteId, type Fail, type FailEnumerates, loggerPushTags, loggerSubmit, runtime } from "..";
 import { hanldeCatchError } from "../util/handle-catch-error";
 import { _validate } from "./validate";
-import { exit, nextTick } from "node:process";
+import { exit } from "node:process";
 
 export type LoongbaoAppOptions = {
   /**
@@ -142,7 +142,7 @@ async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema
 
     // check type
     // @ts-ignore
-    if (Bun.env.PARAMS_VALIDATE !== "false") _validate(await (await schema.apiParamsValidator.validate[path]()).default(params));
+    if (Bun.env.PARAMS_VALIDATE !== "false") _validate(await (await schema.apiValidator.validate[path]()).params(params));
 
     // execute api
     // @ts-ignore
@@ -189,17 +189,19 @@ async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema
   };
 }
 
-export type ExecuteResult<Result> =
-  | {
-      executeId: ExecuteId;
-      success: true;
-      data: Result;
-    }
-  | {
-      executeId: ExecuteId;
-      success: false;
-      fail: Fail<keyof FailEnumerates>;
-    };
+export type ExecuteResult<Result> = ExecuteResultSuccess<Result> | ExecuteResultFail;
+
+export type ExecuteResultSuccess<Result> = {
+  executeId: ExecuteId;
+  success: true;
+  data: Result;
+};
+
+export type ExecuteResultFail<FailT extends Fail<keyof FailEnumerates> = Fail<keyof FailEnumerates>> = {
+  executeId: ExecuteId;
+  success: false;
+  fail: FailT;
+};
 
 export type ExecuteApiOptions = {
   /**

@@ -18,6 +18,8 @@ export function defineFail<Code extends keyof typeof failCode, FailData extends 
 export type FailError = ReturnType<typeof defineFail>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FrameworkEnums = Record<string, FrameworkEnum<any>>;
+export type LoongbaoFailCode = Record<string, (arg: any) => string>;
 
-export type FrameworkEnum<T> = (arg: T) => string;
+export type LoongbaoMeta = {
+  enableResultsValidate?: boolean;
+};

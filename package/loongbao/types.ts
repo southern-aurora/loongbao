@@ -3,7 +3,7 @@ import type { failCode } from "../../src/fail-code";
 
 export type LoongbaoApp = Awaited<ReturnType<typeof createLoongbaoApp>>;
 
-export type ExecuteId = `exec#${string}` | "global";
+export type ExecuteId = string | "global";
 
 export type FailEnumerates = typeof failCode;
 

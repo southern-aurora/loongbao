@@ -1,15 +1,15 @@
 /**
  * ⚠️ This file is generated and modifications will be overwritten
  */
- 
+
 // api
 import type * as helloWorld$say2 from '../src/app/hello-world/say-2'
 import type * as helloWorld$say from '../src/app/hello-world/say'
 
-import _apiParamsValidator from './products/api-params-validator'
+import _apiValidator from './products/api-validator'
 
 export default {
-  apiParamsValidator: _apiParamsValidator,
+  apiValidator: _apiValidator,
   apiMethodsSchema: {
     'hello-world/say-2': () => ({ module: import('../src/app/hello-world/say-2') }),
     'hello-world/say': () => ({ module: import('../src/app/hello-world/say') }),
