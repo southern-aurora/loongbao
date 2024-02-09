@@ -152,17 +152,15 @@ export async function executeHttpServer(app: LoongbaoApp, options: ExecuteHttpSe
           params
         });
 
-        const result = await app.execute(pathstr, params, headers, {
+        const result = await app.executeCore(pathstr, params, headers, {
           executeId,
-          detail,
-          fromServer: true
+          detail
         });
 
         if (response.body === "") {
+          // @ts-ignore
           // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-explicit-any
           const resultTSONed: any = Bun.env.PARAMS_VALIDATE !== "false" ? await (await schema.apiValidator.validate[pathstr]()).HTTPResults(TSON.encode(result)) : TSON.stringify(result);
-          console.warn(resultTSONed);
-
           response.body = response.body + resultTSONed;
         } else if (response.body === undefined || response.body === null) {
           response.body = "";

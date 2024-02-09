@@ -1,5 +1,5 @@
 import { type LoongbaoMeta } from "loongbao";
 
-export type Meta = {
+export type Meta = LoongbaoMeta & {
   //
-} & LoongbaoMeta;
+};

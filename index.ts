@@ -1,9 +1,14 @@
 import { createId } from "@paralleldrive/cuid2";
 import { env } from "bun";
-import { executeApiTest, createLoongbaoApp, executeHttpServer, TSON } from "loongbao";
+import { executeApiTest, createLoongbaoApp, executeHttpServer } from "loongbao";
+import { httpIOConsoleLog } from "./src/middleware/http-io-console-log";
+import { helloWorld } from "./src/bootstrap/hello-world";
 
 // create loongbao
-export const loongbao = await createLoongbaoApp({});
+export const loongbao = await createLoongbaoApp({
+  bootstraps: () => [helloWorld()],
+  middlewares: () => [httpIOConsoleLog()]
+});
 
 if (env.LOONGBAO_TEST) {
   // Decide whether to enter api test mode based on environment

@@ -1,5 +1,6 @@
 /generate
 /dist
+/index.ts
 node_modules
 *.js
 *.cjs

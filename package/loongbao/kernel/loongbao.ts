@@ -1,13 +1,12 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-console, @typescript-eslint/no-invalid-void-type, @typescript-eslint/await-thenable, @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any */
 import { configFramework } from "..";
-import { _sortMiddleware } from "./middleware";
+import { _sortMiddleware, _afterExecuteMiddlewares, _beforeExecuteMiddlewares, _bootstrapMiddlewares, _middlewareHanlder, type MiddlewareOptions } from "./middleware";
 import { createId } from "@paralleldrive/cuid2";
 import schema from "../../../generate/api-schema";
 import type { Context } from "../../../src/context";
 import { failCode } from "../../../src/fail-code";
-import type { FrameworkContext } from "../kernel/context";
-import { _afterExecuteMiddlewares, _beforeExecuteMiddlewares } from "../kernel/middleware";
+import type { FrameworkContext } from "./context";
+
 import { type ExecuteId, type Fail, type FailEnumerates, loggerPushTags, loggerSubmit, runtime } from "..";
 import { hanldeCatchError } from "../util/handle-catch-error";
 import { _validate } from "./validate";
@@ -17,9 +16,15 @@ export type LoongbaoAppOptions = {
   /**
    * bootstraps
    * @description
-   * When Loongbao is launched, all methods in this array will run **in parallel**, usually used to set up middleware.
+   * When Loongbao is launched, all methods in this array will run **in parallel**.
    */
-  bootstraps?: Array<() => void | Promise<void>>;
+  bootstraps?: () => Array</* This type is long, and its intention is to prevent someone from forgetting to add parentheses when adding bootstraps. Therefore, it allows all types except methods */ Promise<unknown> | void | string | number | boolean | null | undefined | Record<string | number | symbol, unknown> | Array<unknown>>;
+  /**
+   * middlewares
+   * @description
+   * When Loongbao is launched, the closer it is to the front of the array, the more it is on the outer layer of the "onion".
+   */
+  middlewares?: () => Array<MiddlewareOptions & { isMiddleware: true }>;
   /**
    * maxRequest
    * @description
@@ -37,7 +42,6 @@ export type LoongbaoAppOptions = {
 };
 
 export async function createLoongbaoApp(loongbaoAppOptions: LoongbaoAppOptions = {}) {
-  // eslint-disable-next-line no-console
   console.log(`🧊 Framework starting on "${configFramework.cwd}"`);
 
   if (loongbaoAppOptions.maxRequest && loongbaoAppOptions.maxRequest >= 1) {
@@ -53,22 +57,58 @@ export async function createLoongbaoApp(loongbaoAppOptions: LoongbaoAppOptions =
     runtime.maxRunningTimeout.enable = true;
   }
 
-  const bootstraps: Array<Promise<void> | void> = [];
+  const loongbaoApp = {
+    execute: _execute,
+    executeCore: _executeCore
+  };
+
   if (loongbaoAppOptions.bootstraps) {
-    for (const bootstrapFunction of loongbaoAppOptions.bootstraps) {
-      bootstraps.push(bootstrapFunction());
-    }
-    await Promise.all(bootstraps);
-    await _sortMiddleware();
+    await Promise.all(loongbaoAppOptions.bootstraps());
   }
 
-  return {
-    execute: _execute
-  };
+  if (loongbaoAppOptions.middlewares) {
+    const middlewares = loongbaoAppOptions.middlewares();
+
+    for (let index = 0; index < middlewares.length; index++) {
+      const middlewareOptions = middlewares[index];
+      _middlewareHanlder(index, middlewareOptions);
+    }
+    await _sortMiddleware();
+    for (const m of _bootstrapMiddlewares) {
+      await m.middleware(loongbaoApp);
+    }
+  }
+
+  return loongbaoApp;
 }
 
-async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema"], Result extends Awaited<ReturnType<(typeof schema)["apiMethodsTypeSchema"][Path]["api"]["action"]>>>(path: Path, params: Parameters<(typeof schema)["apiMethodsTypeSchema"][Path]["api"]["action"]>[0] | string, headersInit: Record<string, string> | Headers = {}, options?: ExecuteApiOptions): Promise<ExecuteResult<Result>> {
+async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema"], Result extends Awaited<ReturnType<(typeof schema)["apiMethodsTypeSchema"][Path]["api"]["action"]>>>(path: Path, params: Parameters<(typeof schema)["apiMethodsTypeSchema"][Path]["api"]["action"]>[0] | string, headersInit: Record<string, string> | Headers = {}, options?: ExecuteOptions): Promise<ExecuteResult<Result>> {
   const executeId = (options?.executeId ?? `exec#${createId()}`) as ExecuteId;
+
+  loggerPushTags(executeId, {
+    from: "execute",
+    executeId,
+    params,
+    path
+  });
+
+  const result: any = await _executeCore(path, params, headersInit, {
+    ...options,
+    onAfterHeaders: (headers) => {
+      loggerPushTags(executeId, {
+        headers: headers.toJSON()
+      });
+    }
+  });
+
+  loggerPushTags(executeId, { result });
+  await loggerSubmit(executeId);
+
+  return result;
+}
+
+async function _executeCore<Path extends keyof (typeof schema)["apiMethodsTypeSchema"], Result extends Awaited<ReturnType<(typeof schema)["apiMethodsTypeSchema"][Path]["api"]["action"]>>>(path: Path, params: Parameters<(typeof schema)["apiMethodsTypeSchema"][Path]["api"]["action"]>[0] | string, headersInit: Record<string, string> | Headers = {}, options: ExecuteCoreOptions): Promise<ExecuteResult<Result>> {
+  const executeId = options.executeId as ExecuteId;
   runtime.execute.executeIds.add(executeId);
 
   if (runtime.maxRequest.enable) {
@@ -77,19 +117,6 @@ async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema
       exit(0);
     }
     runtime.maxRequest.counter++;
-  }
-
-  // const onExecutedFinally = async () => {
-  //   //
-  // };
-
-  if (options?.fromServer !== true) {
-    loggerPushTags(executeId, {
-      from: "execute",
-      executeId,
-      params,
-      path
-    });
   }
 
   if (!(path in schema.apiMethodsSchema)) {
@@ -102,11 +129,7 @@ async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema
         data: undefined
       }
     } satisfies ExecuteResult<Result>;
-
-    if (options?.fromServer !== true) await loggerSubmit(executeId);
     runtime.execute.executeIds.delete(executeId);
-
-    // await onExecutedFinally();
 
     return result;
   }
@@ -120,10 +143,8 @@ async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema
     headers = headersInit;
   }
 
-  if (options?.fromServer !== true) {
-    loggerPushTags(executeId, {
-      headers: headers.toJSON()
-    });
+  if (options?.onAfterHeaders) {
+    await options.onAfterHeaders(headers);
   }
 
   const context: Context = {
@@ -152,7 +173,6 @@ async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema
     const apiMethod = apiModuleAwaited.api.action;
 
     // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     result = { value: await apiMethod(params, context) };
 
     // after execute middleware
@@ -161,26 +181,12 @@ async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema
     }
   } catch (error: any) {
     const errorResult = hanldeCatchError(error, executeId);
-
-    if (options?.fromServer !== true) await loggerSubmit(executeId);
     runtime.execute.executeIds.delete(executeId);
-
-    // await onExecutedFinally();
 
     return errorResult;
   }
 
-  if (options?.fromServer !== true) {
-    loggerPushTags(executeId, {
-      success: true,
-      result: result.value
-    });
-  }
-
-  if (options?.fromServer !== true) await loggerSubmit(executeId);
   runtime.execute.executeIds.delete(executeId);
-
-  // await onExecutedFinally();
 
   return {
     executeId,
@@ -203,21 +209,20 @@ export type ExecuteResultFail<FailT extends Fail<keyof FailEnumerates> = Fail<ke
   fail: FailT;
 };
 
-export type ExecuteApiOptions = {
+export type ExecuteOptions = {
   /**
    * The executeId of the request
    * executeId may be generated by the serverless provider, if not, a random string will be generated instead
    */
   executeId?: string;
   /**
-   * Determine if the invocation of "execute" is from the server.
-   * If true, disable certain functions to be implemented by the server itself, such as logging, maxRequest, etc.
-   */
-  fromServer?: boolean;
-  /**
    * Additional information about the request
    * These are usually only fully implemented when called by an HTTP server
    * During testing or when calling between microservices, some or all of the values may be undefined
    */
   detail?: FrameworkContext["detail"];
+};
+
+export type ExecuteCoreOptions = ExecuteOptions & {
+  onAfterHeaders?: (headers: Headers) => void | Promise<void>;
 };

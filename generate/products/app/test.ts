@@ -1,15 +1,15 @@
 import typia from "typia";
 import { ExecuteResultSuccess } from "loongbao";
 import { type TSONEncode } from "@southern-aurora/tson";
-import type * as helloWorld$say from "../../../../src/app/get";
-export const params = async (params: any) => ((input: any): typia.IValidation<Parameters<typeof helloWorld$say['api']['action']>[0]> => { const validate = (input: any): typia.IValidation<Parameters<typeof helloWorld$say['api']['action']>[0]> => {
+import type * as test from "../../../src/app/get";
+export const params = async (params: any) => ((input: any): typia.IValidation<Parameters<typeof test['api']['action']>[0]> => { const validate = (input: any): typia.IValidation<Parameters<typeof test['api']['action']>[0]> => {
     const errors = [] as any[];
-    const __is = (input: any): input is Parameters<typeof helloWorld$say['api']['action']>[0] => {
+    const __is = (input: any): input is Parameters<typeof test['api']['action']>[0] => {
         return null !== input && undefined === input;
     };
     if (false === __is(input)) {
         const $report = (typia.misc.validatePrune as any).report(errors);
-        ((input: any, _path: string, _exceptionable: boolean = true): input is Parameters<typeof helloWorld$say['api']['action']>[0] => {
+        ((input: any, _path: string, _exceptionable: boolean = true): input is Parameters<typeof test['api']['action']>[0] => {
             return (null !== input || $report(true, {
                 path: _path + "",
                 expected: "undefined",
@@ -27,10 +27,10 @@ export const params = async (params: any) => ((input: any): typia.IValidation<Pa
         errors,
         data: success ? input : undefined
     } as any;
-}; const prune = (input: Parameters<typeof helloWorld$say['api']['action']>[0]): void => {
+}; const prune = (input: Parameters<typeof test['api']['action']>[0]): void => {
 }; const output = validate(input); if (output.success)
     prune(input); return output; })(params);
-export const HTTPResults = async (results: any) => { type T = TSONEncode<ExecuteResultSuccess<Awaited<ReturnType<typeof helloWorld$say['api']['action']>>>>; return ((input: T): string => {
+export const HTTPResults = async (results: any) => { type T = TSONEncode<ExecuteResultSuccess<Awaited<ReturnType<typeof test['api']['action']>>>>; return ((input: T): string => {
     const $io1 = (input: any): boolean => "number" === typeof input.total && (Array.isArray(input.list) && input.list.every((elem: any) => "object" === typeof elem && null !== elem && $io2(elem)));
     const $io2 = (input: any): boolean => "number" === typeof input.id && "string" === typeof input.title;
     const $string = (typia.json.stringify as any).string;

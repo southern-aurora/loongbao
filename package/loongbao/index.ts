@@ -25,5 +25,5 @@ export * from "./kernel/middleware";
 export * from "./kernel/execute-api-test";
 export * from "./kernel/execute-http-server";
 
-// index
-export * from "./kernel/index";
+// loongbao
+export * from "./kernel/loongbao";

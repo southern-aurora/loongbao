@@ -3,26 +3,21 @@
  */
 
 // api
-import type * as helloWorld$say2 from '../src/app/hello-world/say-2'
-import type * as helloWorld$say from '../src/app/hello-world/say'
+import type * as get from '../src/app/get'
 
 import _apiValidator from './products/api-validator'
 
 export default {
   apiValidator: _apiValidator,
   apiMethodsSchema: {
-    'hello-world/say-2': () => ({ module: import('../src/app/hello-world/say-2') }),
-    'hello-world/say': () => ({ module: import('../src/app/hello-world/say') }),
+    'get': () => ({ module: import('../src/app/get') }),
     
   },
   apiMethodsTypeSchema: {
-    'hello-world/say-2': undefined as unknown as typeof helloWorld$say2,
-    'hello-world/say': undefined as unknown as typeof helloWorld$say,
+    'get': undefined as unknown as typeof get,
     
   },
   apiTestsSchema: {
-    'hello-world/say-2': () => ({ module: import('../src/app/hello-world/say-2') }),
-    'hello-world/say': () => ({ module: import('../src/app/hello-world/say') }),
     
   },
 }
