@@ -1,5 +1,4 @@
 /* eslint-disable no-console, @typescript-eslint/no-invalid-void-type, @typescript-eslint/await-thenable, @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any */
-import { configFramework } from "..";
 import { _sortMiddleware, _afterExecuteMiddlewares, _beforeExecuteMiddlewares, _bootstrapMiddlewares, _middlewareHanlder, type MiddlewareOptions } from "./middleware";
 import { createId } from "@paralleldrive/cuid2";
 import schema from "../../../generate/api-schema";
@@ -7,7 +6,7 @@ import type { Context } from "../../../src/context";
 import { failCode } from "../../../src/fail-code";
 import type { FrameworkContext } from "./context";
 
-import { type ExecuteId, type Fail, type FailEnumerates, loggerPushTags, loggerSubmit, runtime } from "..";
+import { type Mixin, type ExecuteId, type Fail, type FailEnumerates, configFramework, loggerPushTags, loggerSubmit, runtime } from "..";
 import { hanldeCatchError } from "../util/handle-catch-error";
 import { _validate } from "./validate";
 import { exit } from "node:process";
@@ -31,29 +30,29 @@ export type LoongbaoAppOptions = {
    * When the function runs for a long time, it is possible that the memory will continuously expand (not necessarily due to memory leaks, but also possibly due to having a large number of routes).
    * Set a maximum number of requests, when the number of requests reaches this value, kill the process and automatically restart it from outside (K8S or whatever).
    */
-  maxRequest?: number | null | undefined;
+  enableMaxRequestLimit?: number | null | undefined;
   /**
    * maxRunningTime (minutes)
    * @description
    * When the function runs for a long time, it is possible that the memory will continuously expand (not necessarily due to memory leaks, but also possibly due to having a large number of routes).
    * Set the maximum running time (in minutes). When Loongbao's running time reaches this value, terminate the process and automatically restart it from outside (K8S or other means).
    */
-  maxRunningTimeout?: number | null | undefined;
+  enableMaxRunningTimeoutLimit?: number | null | undefined;
 };
 
 export async function createLoongbaoApp(loongbaoAppOptions: LoongbaoAppOptions = {}) {
   console.log(`🧊 Framework starting on "${configFramework.cwd}"`);
 
-  if (loongbaoAppOptions.maxRequest && loongbaoAppOptions.maxRequest >= 1) {
-    runtime.maxRequest.expected = loongbaoAppOptions.maxRequest;
+  if (loongbaoAppOptions?.enableMaxRequestLimit && loongbaoAppOptions.enableMaxRequestLimit >= 1) {
+    runtime.maxRequest.expected = loongbaoAppOptions.enableMaxRequestLimit;
     runtime.maxRequest.enable = true;
   }
 
-  if (loongbaoAppOptions.maxRunningTimeout && loongbaoAppOptions.maxRunningTimeout >= 1) {
+  if (loongbaoAppOptions.enableMaxRunningTimeoutLimit && loongbaoAppOptions.enableMaxRunningTimeoutLimit >= 1) {
     setTimeout(() => {
       console.log('❌ Loongbao reached the limit of "maxRunningTimeout" in the options and automatically exited.');
       exit(0);
-    }, loongbaoAppOptions.maxRunningTimeout * 60 * 1000);
+    }, loongbaoAppOptions.enableMaxRunningTimeoutLimit * 60 * 1000);
     runtime.maxRunningTimeout.enable = true;
   }
 
@@ -75,6 +74,7 @@ export async function createLoongbaoApp(loongbaoAppOptions: LoongbaoAppOptions =
     }
     await _sortMiddleware();
     for (const m of _bootstrapMiddlewares) {
+      // @ts-ignore
       await m.middleware(loongbaoApp);
     }
   }
@@ -94,6 +94,7 @@ async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema
 
   const result: any = await _executeCore(path, params, headersInit, {
     ...options,
+    executeId,
     onAfterHeaders: (headers) => {
       loggerPushTags(executeId, {
         headers: headers.toJSON()
@@ -223,6 +224,10 @@ export type ExecuteOptions = {
   detail?: FrameworkContext["detail"];
 };
 
-export type ExecuteCoreOptions = ExecuteOptions & {
-  onAfterHeaders?: (headers: Headers) => void | Promise<void>;
-};
+export type ExecuteCoreOptions = Mixin<
+  ExecuteOptions,
+  {
+    executeId: string;
+    onAfterHeaders?: (headers: Headers) => void | Promise<void>;
+  }
+>;
