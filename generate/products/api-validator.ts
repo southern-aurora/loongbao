@@ -2,7 +2,7 @@
  * ⚠️This file is generated and modifications will be overwritten
  */
 export default {
-    generatedAt: 1707472329449,
+    generatedAt: 1707488628270,
     validate: {
         'get': () => import('./app/get.ts'),
     },

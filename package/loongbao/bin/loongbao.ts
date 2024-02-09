@@ -1,12 +1,10 @@
 #!/usr/bin/env bun
-
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-misused-promises, no-console, @typescript-eslint/no-explicit-any */
 
 import { argv, cwd, exit, stdout } from "node:process";
 import { exec } from "../util/exec";
 import { join } from "node:path";
-import { watch } from "node:fs";
+import { rmSync, watch } from "node:fs";
 import { env } from "bun";
 
 const rootPath = cwd();
@@ -22,25 +20,34 @@ const commands = {
 
     let proactive = false;
     let proc: any;
+    let locker = false;
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    const watcher = watch(appPath, { recursive: true }, async () => {
+    const watcher = watch(appPath, { recursive: true }, async (event, filename) => {
+      if (locker) return;
+      locker = true;
       proactive = true;
       await proc.kill();
-
+      const path = join(appPath, filename!).slice(join(cwd(), "src", "app").length + 1);
       // eslint-disable-next-line no-void
-      void run();
+      void run(path);
     });
     process.on("SIGINT", () => {
       // close watcher when Ctrl-C is pressed
       watcher.close();
       process.exit(0);
     });
-    const run = async () => {
+    const run = async (path?: string) => {
       return await new Promise((resolve, reject) => {
-        exec(rootPath, ["bun", "./node_modules/loongbao/scripts/generate.ts"], {
-          env: { ...env, PARAMS_VALIDATE: env.PARAMS_VALIDATE }
-        })
+        (!path
+          ? exec(rootPath, ["bun", "./node_modules/loongbao/scripts/generate.ts"], {
+              env: { ...env, PARAMS_VALIDATE: env.PARAMS_VALIDATE }
+            })
+          : exec(rootPath, ["bun", "./node_modules/loongbao/scripts/generate-partial.ts"], {
+              env: { ...env, PARAMS_VALIDATE: env.PARAMS_VALIDATE, GENERATE_PARTIAL_PATH: path }
+            })
+        )
           .then(() => {
+            locker = false;
             proactive = false;
             proc = Bun.spawn(["bun", "--inspect", "--hot", "./index.ts"], {
               stdin: "inherit",
@@ -53,6 +60,13 @@ const commands = {
                 }
               }
             });
+
+            // After the server starts, compile the cookbook in parallel
+            setTimeout(async () => {
+              rmSync(join(cwd(), "generate", "raw-tmp"), { recursive: true, force: true });
+              rmSync(join(cwd(), "generate", "products-tmp"), { recursive: true, force: true });
+              await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/build-cookbook.ts"]);
+            }, 0);
           })
           .catch(reject);
       });
@@ -100,6 +114,9 @@ const commands = {
         if (result === "q") exit(0);
       }
     }
+  },
+  async "build:cookbook"() {
+    await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/build-cookbook.ts"]);
   },
   async "build:client"() {
     await exec(join(rootPath, "package", "client"), ["bun", "i"]);

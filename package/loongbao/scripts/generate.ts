@@ -4,7 +4,7 @@
 import ejs from "ejs";
 import { join } from "node:path";
 import walkSync from "walk-sync";
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { cwd, exit, stdout } from "node:process";
 import { unlink, writeFile } from "node:fs/promises";
 import { exec as nodeExec } from "node:child_process";
@@ -26,7 +26,8 @@ const utils = {
   hyphen: (str: string) => hyphen(str).replaceAll("_", "")
 };
 
-export async function generateSchema() {
+export async function generate() {
+  rmSync(join("generate"), { recursive: true, force: true });
   // Make sure that the existing directories are all present
   existsSync(join("generate")) || mkdirSync(join("generate"));
   existsSync(join("generate", "raw")) || mkdirSync(join("generate", "raw"));
@@ -168,15 +169,9 @@ export default {
       })
     );
   }
-
-  await new Promise((resolve) =>
-    nodeExec("bun run ./node_modules/loongbao/scripts/build-cookbook.ts", (e) => {
-      resolve(e);
-    })
-  );
 }
 
-await generateSchema();
+await generate();
 
 stdout.write("\r");
 stdout.clearLine(1);
