@@ -3,10 +3,9 @@
  */
 
 export default {
-  generatedAt: 1707469197208,
+  generatedAt: 1707472329449,
   validate: {
     'get': () => import('./app/get.ts'),
-    'hello-world/get': () => import('./app/hello-world/get.ts'),
     
   },
 }

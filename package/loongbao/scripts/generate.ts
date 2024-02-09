@@ -103,8 +103,11 @@ import { ExecuteResultSuccess${module?.api?.meta?.enableResultsValidate ? ", _va
 import { type TSONEncode } from "@southern-aurora/tson";
 import type * as <%= utils.camel(path.slice(0, -3).replaceAll('/', '$')) %> from '${importPath}/<%= path.slice(0, -3) %>';
 
-export const params = async (params: any) => typia.misc.validatePrune<Parameters<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>[0]>(params);
-export const HTTPResults = async (results: any) => { type T = TSONEncode<ExecuteResultSuccess<Awaited<ReturnType<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>>>>; ${module?.api?.meta?.enableResultsValidate ? "_validate(typia.validate<T>(results));" : ""} return typia.json.stringify<T>(results); };
+type ParamsT = Parameters<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>[0];
+export const params = async (params: any) => typia.misc.validatePrune<ParamsT>(params);
+export const paramsSchema = typia.json.application<[{ data: ParamsT }], "swagger">();
+type HTTPResultsT = Awaited<ReturnType<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>>;
+export const HTTPResults = async (results: any) => { ${module?.api?.meta?.enableResultsValidate ? "_validate(typia.validate<TSONEncode<ExecuteResultSuccess<HTTPResultsT>>>(results));" : ""} return typia.json.stringify<TSONEncode<ExecuteResultSuccess<HTTPResultsT>>>(results); };
 `.trim();
 
     await writeFile(filePath, ejs.render(template, { ...templateVars, path }));

@@ -159,11 +159,18 @@ export async function buildCookbook() {
       });
     }
 
+    let paramsSchema;
+    try {
+      const moduleGenerated = await import(/* @vite-ignore */ `../../../generate/products/app/${path}`);
+      paramsSchema = moduleGenerated.paramsSchema.schemas[0]?.properties?.data;
+    } catch (error) {}
+
     cookbook[path] = {
       title,
       desc,
-      apiParams,
-      apiCases
+      params: apiParams,
+      cases: apiCases,
+      paramsSchema
     };
   }
 

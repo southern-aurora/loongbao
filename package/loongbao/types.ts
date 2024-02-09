@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any */
 
 import { type createLoongbaoApp } from ".";
 import type { failCode } from "../../src/fail-code";
@@ -24,8 +24,9 @@ export type Cookbook = Record<string, CookbookItem>;
 export type CookbookItem = {
   title?: string;
   desc?: string;
-  apiParams: string;
-  apiCases: Array<{
+  params: string;
+  paramsSchema?: any;
+  cases: Array<{
     name: string;
     handler: string;
   }>;
