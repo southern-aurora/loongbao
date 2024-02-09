@@ -19,26 +19,29 @@ const commands = {
   },
   async dev() {
     const appPath = join(cwd(), "src", "app");
-    const run = async () => {
-      return new Promise((resolve, reject) => {
-        let proactive = false;
-        let proc: any;
-        const watcher = watch(appPath, { recursive: true }, () => {
-          proactive = true;
-          watcher.close();
-          proc.kill();
-          resolve(undefined);
-        });
-        process.on("SIGINT", () => {
-          // close watcher when Ctrl-C is pressed
-          watcher.close();
-          process.exit(0);
-        });
 
+    let proactive = false;
+    let proc: any;
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    const watcher = watch(appPath, { recursive: true }, async () => {
+      proactive = true;
+      await proc.kill();
+
+      // eslint-disable-next-line no-void
+      void run();
+    });
+    process.on("SIGINT", () => {
+      // close watcher when Ctrl-C is pressed
+      watcher.close();
+      process.exit(0);
+    });
+    const run = async () => {
+      return await new Promise((resolve, reject) => {
         exec(rootPath, ["bun", "./node_modules/loongbao/scripts/generate.ts"], {
           env: { ...env, PARAMS_VALIDATE: env.PARAMS_VALIDATE }
         })
           .then(() => {
+            proactive = false;
             proc = Bun.spawn(["bun", "--inspect", "--hot", "./index.ts"], {
               stdin: "inherit",
               stdout: "inherit",
@@ -55,9 +58,7 @@ const commands = {
       });
     };
 
-    while (true) {
-      await run();
-    }
+    await run();
   },
   async start() {
     await exec(rootPath, ["bun", "./index.ts"]);

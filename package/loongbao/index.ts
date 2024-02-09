@@ -11,6 +11,7 @@ export * from "./util/env-to-boolean";
 export * from "./define/define-use";
 export * from "./define/define-api";
 export * from "./define/define-api-test";
+export * from "./define/define-middleware";
 
 // kernel
 export * from "./kernel/runtime";

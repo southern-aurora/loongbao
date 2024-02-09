@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+
 import { type createLoongbaoApp } from ".";
 import type { failCode } from "../../src/fail-code";
 
@@ -17,7 +19,18 @@ export type Fail<FailCode extends keyof FailEnumerates> = {
   data: Parameters<FailEnumerates[FailCode]>[0];
 };
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+export type Cookbook = Record<string, CookbookItem>;
+
+export type CookbookItem = {
+  title?: string;
+  desc?: string;
+  apiParams: string;
+  apiCases: Array<{
+    name: string;
+    handler: string;
+  }>;
+};
+
 export type DatabaseType<Table extends { findFirst: () => unknown }, Override = {}> = Mixin<NonNullable<Awaited<ReturnType<Table["findFirst"]>>>, Override>;
 
 export type Override<P, S> = Omit<P, keyof S> & S;

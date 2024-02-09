@@ -165,6 +165,12 @@ export default {
       })
     );
   }
+
+  await new Promise((resolve) =>
+    nodeExec("bun run ./node_modules/loongbao/scripts/build-cookbook.ts", (e) => {
+      resolve(e);
+    })
+  );
 }
 
 await generateSchema();

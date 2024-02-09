@@ -47,13 +47,6 @@ export type MiddlewareOptions = {
   beforeHTTPResponse?: BeforeHTTPResponseMiddleware;
 };
 
-export function defineMiddleware(options: MiddlewareOptions): () => MiddlewareOptions & { isMiddleware: true } {
-  return () => ({
-    ...options,
-    isMiddleware: true
-  });
-}
-
 const push = (index: number, middlewares: Array<any>, middleware: any) => {
   const id = createId();
   middlewares.push({ id, index, middleware });
