@@ -7,7 +7,7 @@ export const api = defineApi({
   },
   action(
     params: {
-      // hello?: "world";
+      hello?: "world";
       by?: string & typia.tags.MinLength<2> & typia.tags.MaxLength<16>;
     },
     context

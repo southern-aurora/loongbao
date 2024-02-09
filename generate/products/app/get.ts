@@ -6,13 +6,17 @@ type ParamsT = Parameters<typeof get['api']['action']>[0];
 export const params = async (params: any) => ((input: any): typia.IValidation<ParamsT> => { const validate = (input: any): typia.IValidation<ParamsT> => {
     const errors = [] as any[];
     const __is = (input: any): input is ParamsT => {
-        const $io0 = (input: any): boolean => undefined === input.by || "string" === typeof input.by && (2 <= input.by.length && input.by.length <= 16);
+        const $io0 = (input: any): boolean => (undefined === input.hello || "world" === input.hello) && (undefined === input.by || "string" === typeof input.by && (2 <= input.by.length && input.by.length <= 16));
         return "object" === typeof input && null !== input && false === Array.isArray(input) && $io0(input);
     };
     if (false === __is(input)) {
         const $report = (typia.misc.validatePrune as any).report(errors);
         ((input: any, _path: string, _exceptionable: boolean = true): input is ParamsT => {
-            const $vo0 = (input: any, _path: string, _exceptionable: boolean = true): boolean => [undefined === input.by || "string" === typeof input.by && (2 <= input.by.length || $report(_exceptionable, {
+            const $vo0 = (input: any, _path: string, _exceptionable: boolean = true): boolean => [undefined === input.hello || "world" === input.hello || $report(_exceptionable, {
+                    path: _path + ".hello",
+                    expected: "(\"world\" | undefined)",
+                    value: input.hello
+                }), undefined === input.by || "string" === typeof input.by && (2 <= input.by.length || $report(_exceptionable, {
                     path: _path + ".by",
                     expected: "string & MinLength<2>",
                     value: input.by
@@ -45,7 +49,7 @@ export const params = async (params: any) => ((input: any): typia.IValidation<Pa
 }; const prune = (input: ParamsT): void => {
     const $po0 = (input: any): any => {
         for (const key of Object.keys(input)) {
-            if ("by" === key)
+            if ("hello" === key || "by" === key)
                 continue;
             delete input[key];
         }
@@ -62,6 +66,12 @@ export const paramsSchema = {
                 data: {
                     type: "object",
                     properties: {
+                        hello: {
+                            type: "string",
+                            "enum": [
+                                "world"
+                            ]
+                        },
                         by: {
                             type: "string",
                             maxLength: 16,

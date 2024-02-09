@@ -17,7 +17,7 @@ void (() => {
   return setInterval(() => {
     stdout.write(`\r${P[x++]}`);
     x &= P.length - 1;
-  }, 32);
+  }, 48);
 })();
 
 const utils = {

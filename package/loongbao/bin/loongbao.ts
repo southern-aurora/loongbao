@@ -6,6 +6,7 @@ import { exec } from "../util/exec";
 import { join } from "node:path";
 import { rmSync, watch } from "node:fs";
 import { env } from "bun";
+import { E } from "../../../docs/assets/chunks/framework.ajfdQ9vp";
 
 const rootPath = cwd();
 const method = argv[2] as keyof typeof commands;
@@ -27,9 +28,13 @@ const commands = {
       locker = true;
       proactive = true;
       await proc.kill();
-      const path = join(appPath, filename!).slice(join(cwd(), "src", "app").length + 1);
-      // eslint-disable-next-line no-void
-      void run(path);
+      if (event === "change") {
+        const path = join(appPath, filename!).slice(join(cwd(), "src", "app").length + 1);
+        // eslint-disable-next-line no-void
+        void run(path);
+      } else {
+        void run(undefined);
+      }
     });
     process.on("SIGINT", () => {
       // close watcher when Ctrl-C is pressed
@@ -68,7 +73,11 @@ const commands = {
               await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/build-cookbook.ts"]);
             }, 0);
           })
-          .catch(reject);
+          .catch((error) => {
+            locker = false;
+            proactive = false;
+            reject(error);
+          });
       });
     };
 
