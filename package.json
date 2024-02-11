@@ -16,7 +16,7 @@
     "@paralleldrive/cuid2": "^2.2.2",
     "@southern-aurora/tson": "2.0.1",
     "@types/node": "^20.5.1",
-    "loongbao": "./package/loongbao",
+    "loongbao": "./packages/loongbao",
     "typia": "^5.4.7"
   },
   "devDependencies": {

@@ -3,14 +3,14 @@
  */
 
 // api
-import type * as get from '../src/app/get'
+import type * as get from '../src/apps/get'
 
-import _apiValidator from './products/api-validator'
+import _apiValidator from './products/api-validator.ts'
 
 export default {
   apiValidator: _apiValidator,
   apiMethodsSchema: {
-    'get': () => ({ module: import('../src/app/get') }),
+    'get': () => ({ module: import('../src/apps/get') }),
     
   },
   apiMethodsTypeSchema: {
@@ -18,7 +18,7 @@ export default {
     
   },
   apiTestsSchema: {
-    'get': () => ({ module: import('../src/app/get') }),
+    'get': () => ({ module: import('../src/apps/get') }),
     
   },
 }

@@ -1,8 +1,8 @@
 import { createId } from "@paralleldrive/cuid2";
 import { env } from "bun";
 import { executeApiTest, createLoongbaoApp, executeHttpServer } from "loongbao";
-import { httpIOConsoleLog } from "./src/middleware/http-io-console-log";
-import { helloWorld } from "./src/bootstrap/hello-world";
+import { httpIOConsoleLog } from "./src/middlewares/http-io-console-log";
+import { helloWorld } from "./src/bootstraps/hello-world";
 
 // create loongbao
 export const loongbao = await createLoongbaoApp({
