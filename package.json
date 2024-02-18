@@ -7,8 +7,10 @@
     "generate": "loongbao generate",
     "dev": "loongbao dev",
     "test": "loongbao test",
-    "start": "bun ./index.ts",
-    "build": "bun build ./index.ts --compile --minify --outfile app --target bun"
+    "build:dto": "loongbao build:dto",
+    "build:cookbook": "loongbao build:cookbook",
+    "build": "bun build ./index.ts --compile --minify --outfile app --target bun",
+    "start": "bun ./index.ts"
   },
   "peerDependencies": {},
   "trustedDependencies": [],

@@ -5,40 +5,43 @@ import { removeDir } from "../util/remove-dir";
 import { join } from "node:path";
 import { copyFile, mkdir } from "node:fs/promises";
 
-export async function buildClient() {
-  console.log("🧊 Client Building..");
+export async function buildDTO() {
+  console.log("🧊 Loongbao DTO Building..");
 
-  removeDir(join(cwd(), "packages", "client", "dist"));
-  removeDir(join(cwd(), "packages", "client", "generate"));
-  await mkdir(join(cwd(), "packages", "client", "dist"));
-  await mkdir(join(cwd(), "packages", "client", "generate"));
+  removeDir(join(cwd(), "packages", "dto", "dist"));
+  removeDir(join(cwd(), "packages", "dto", "generate"));
+  await mkdir(join(cwd(), "packages", "dto", "dist"));
+  await mkdir(join(cwd(), "packages", "dto", "generate"));
 
-  // Generate the corresponding types for the files in the project and output them to the /packages/client/generate directory.
+  // Generate the corresponding types for the files in the project and output them to the /packages/dto/generate directory.
   await new Promise((resolve) =>
-    nodeExec("bun ./node_modules/typescript/bin/tsc --project tsconfig.client-generate.json", (e) => {
+    nodeExec("bun ./node_modules/typescript/bin/tsc --project tsconfig.build-dto.json", (e, stdout) => {
       resolve(e);
     })
   );
-  await copyFile(join(cwd(), "src", "fail-code.ts"), join(cwd(), "packages", "client", "generate", "src", "fail-code.ts"));
+  await copyFile(join(cwd(), "src", "fail-code.ts"), join(cwd(), "packages", "dto", "generate", "src", "fail-code.ts"));
 
-  // Packaging type for the client
+  // Packaging type for the dto
   await new Promise((resolve) =>
-    nodeExec("cd ./packages/client && bunx tsc", (e) => {
+    nodeExec("cd ./packages/dto && bunx tsc", (e) => {
       resolve(e);
     })
   );
 
-  // build /src/client/index.ts to js
+  // build /src/dto/index.ts to js
   await Bun.build({
-    entrypoints: ["./packages/client/index.ts"],
-    outdir: "./packages/client"
+    entrypoints: ["./packages/dto/index.ts"],
+    outdir: "./packages/dto"
   });
 
-  const root = join(cwd(), "packages", "client");
+  const root = join(cwd(), "packages", "dto");
 
-  console.log("🧊 If there are no errors, please manual publish:");
+  console.log("🧊 Loongbao DTO Build Finished");
   console.log("\x1B[2m");
   console.log("Now, your latest code (including changes to your interface) is built to the latest version and waiting for your release!");
+  console.log("");
+  console.log("If you want to publish it to NPM, you can use a command similar to the following.");
+  console.log(`(But before that, you may need to modify the package name (${join(cwd(), "packages", "dto", "package.json")}) and login to your NPM account or private NPM repository)`);
 
   if (platform !== "win32") {
     console.log("You can publish it to npm by running this commands:");
@@ -59,4 +62,4 @@ export async function buildClient() {
   console.log("---");
 }
 
-await buildClient();
+await buildDTO();

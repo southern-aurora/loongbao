@@ -16,6 +16,15 @@ scripts = ['''
     && npm publish --access public
 ''']
 
+["publish:client"]
+commands = ["publish:client", "p:c"]
+scripts = ['''
+    cd ./packages/loongbao-client
+    && bun run build
+    && npm version patch
+    && npm publish --access public
+''']
+
 ["publish:doc"]
 commands = ["publish:doc", "publ:doc", "p:doc"]
 scripts = ['''

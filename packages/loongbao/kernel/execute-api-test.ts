@@ -19,7 +19,8 @@ export const executeApiTest = async <Paths extends Array<keyof (typeof schema)["
   const tests = [];
   const startedAt = new Date().getTime();
 
-  for (const path of paths) {
+  for (let path of paths) {
+    if (path.startsWith("/")) path = path.slice(1) as Paths[number];
     tests.push(
       // @ts-ignore
       (async () => {

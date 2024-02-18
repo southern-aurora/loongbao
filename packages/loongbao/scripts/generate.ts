@@ -1,4 +1,3 @@
-/// <reference path="../types.d.ts" />
 /* eslint-disable no-console */
 
 import ejs from "ejs";
@@ -60,12 +59,12 @@ export async function generate() {
     if (module?.api?.isApi === true) {
       // Exclude disallowed characters
       if (path.includes("_")) {
-        console.error(`\n\nPath: ` + path);
+        console.error(`\n\nPath: ` + `"${path}"`);
         console.error(`Do not use "_" in the path. If you want to add a separator between words, please use "-".\n`);
         exit(1);
       }
-      if (/^[a-z0-9/-]+$/.test(path)) {
-        console.error(`\n\nPath: ` + path);
+      if (!/^[a-z0-9/-]+$/.test(path.slice(0, -3))) {
+        console.error(`\n\nPath: ` + `"${path}"`);
         console.error(`The path can only contain lowercase letters, numbers, and "-".\n`);
         exit(1);
       }
@@ -75,21 +74,20 @@ export async function generate() {
       if (module?.test?.isApiTest === true) {
         templateVars.apiTestPaths.push(path);
       }
-    }
 
-    // typia
-    const filePath = join(cwd(), "generate", "raw", "apps", path);
-    const dirPath = join(cwd(), "generate", "raw", "apps", path).split("/").slice(0, -1).join("/");
-    if (!existsSync(dirPath)) {
-      mkdirSync(dirPath, { recursive: true });
-    }
-    let importPath = "../../../";
+      // typia
+      const filePath = join(cwd(), "generate", "raw", "apps", path);
+      const dirPath = join(cwd(), "generate", "raw", "apps", path).split("/").slice(0, -1).join("/");
+      if (!existsSync(dirPath)) {
+        mkdirSync(dirPath, { recursive: true });
+      }
+      let importPath = "../../../";
 
-    for (let i = 0; i < path.split("/").length - 1; i++) {
-      importPath = importPath + "../";
-    }
-    importPath = importPath + "src/apps";
-    const template = `
+      for (let i = 0; i < path.split("/").length - 1; i++) {
+        importPath = importPath + "../";
+      }
+      importPath = importPath + "src/apps";
+      const template = `
 import typia from "typia";
 import { ExecuteResultSuccess${module?.api?.meta?.enableResultsValidate ? ", _validate" : ""} } from "loongbao";
 import { type TSONEncode } from "@southern-aurora/tson";
@@ -97,12 +95,13 @@ import type * as <%= utils.camel(path.slice(0, -3).replaceAll('/', '$')) %> from
 
 type ParamsT = Parameters<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>[0];
 export const params = async (params: any) => typia.misc.validatePrune<ParamsT>(params);
-export const paramsSchema = typia.json.application<[{ data: ParamsT }], "swagger">();
 `.trim();
-    // type HTTPResultsT = Awaited<ReturnType<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>>;
-    // export const HTTPResults = async (results: any) => { ${module?.api?.meta?.enableResultsValidate ? "_validate(typia.validate<TSONEncode<ExecuteResultSuccess<HTTPResultsT>>>(results));" : ""} return typia.json.stringify<TSONEncode<ExecuteResultSuccess<HTTPResultsT>>>(results); };
+      // export const paramsSchema = typia.json.application<[{ data: ParamsT }], "swagger">();
+      // type HTTPResultsT = Awaited<ReturnType<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>>;
+      // export const HTTPResults = async (results: any) => { ${module?.api?.meta?.enableResultsValidate ? "_validate(typia.validate<TSONEncode<ExecuteResultSuccess<HTTPResultsT>>>(results));" : ""} return typia.json.stringify<TSONEncode<ExecuteResultSuccess<HTTPResultsT>>>(results); };
 
-    await writeFile(filePath, ejs.render(template, { ...templateVars, path }));
+      await writeFile(filePath, ejs.render(template, { ...templateVars, path }));
+    }
   }
 
   await writeFile(

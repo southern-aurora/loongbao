@@ -29,7 +29,6 @@ export type CookbookItem = {
   title?: string;
   desc?: string;
   params: string;
-  paramsSchema?: any;
   cases: Array<{
     name: string;
     handler: string;

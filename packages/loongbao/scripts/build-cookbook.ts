@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, @typescript-eslint/no-dynamic-delete */
 
 import { TSON, type Cookbook } from "..";
 import { join } from "node:path";
@@ -14,15 +14,17 @@ export async function buildCookbook() {
     const module = await import(/* @vite-ignore */ `../../../src/apps/${path}`);
     let title;
     let desc;
-    const descRaw = module.api.cookbook;
+    const descRaw = module.readme;
     if (descRaw) {
       const descRawLines = descRaw.split("\n");
-      title = descRawLines[0].trim();
+      if (descRawLines.at(0)?.trim() === "") descRawLines.shift();
+      if (descRawLines.at(-1)?.trim() === "") descRawLines.pop();
       for (let index = 0; index < descRawLines.length; index++) {
         const descRawLine = descRawLines[index];
         if (index === 0) {
-          title = descRawLine.trim();
-          continue;
+          title = descRawLine.replace(/#/g, "").trim();
+          // Originally the title was in the first line, desc is the rest of it, now desc contains complete markdown content.
+          // continue;
         }
         desc = (desc ?? "") + "\n" + descRawLine.trim();
       }
@@ -133,6 +135,8 @@ export async function buildCookbook() {
       const handlerLines = handler.split("\n"); // The intention of the following code is to remove extra spaces, which will make the code look more beautiful.
       if (handlerLines.at(-1)?.trim() === "") handlerLines.pop();
       if (handlerLines.at(-1)?.trim() === "") handlerLines.pop();
+      if (handlerLines.at(0)?.trim() === "") handlerLines.shift();
+      if (handlerLines.at(0)?.trim() === "") handlerLines.shift();
       let spaceNumber = 0;
       for (const char of handlerLines.at(-1) ?? "") {
         if (char === " ") spaceNumber++;
@@ -159,22 +163,66 @@ export async function buildCookbook() {
       });
     }
 
-    let paramsSchema;
-    try {
-      const moduleGenerated = await import(/* @vite-ignore */ `../../../generate/products/apps/${path}`);
-      paramsSchema = moduleGenerated.paramsSchema.schemas[0]?.properties?.data;
-    } catch (error) {}
+    // This value has been deprecated because TypeScript types can already replace it well
+    // let paramsSchema;
+    // try {
+    //   const moduleGenerated = await import(/* @vite-ignore */ `../../../generate/products/apps/${path}`);
+    //   paramsSchema = moduleGenerated.paramsSchema.schemas[0]?.properties?.data;
+    // } catch (error) {}
 
     cookbook[path] = {
       title,
       desc,
       params: apiParams,
-      cases: apiCases,
-      paramsSchema
+      cases: apiCases
     };
   }
 
-  await writeFile(join(cwd(), `./generate/cookbook.json`), TSON.stringify(cookbook));
+  /**
+   * -- indexes
+   */
+
+  const indexes: Record<string, Array<string>> = {};
+  const folderIndexes: Record<string, Array<string>> = {};
+  indexes["(root)"] = [];
+  folderIndexes["(root)"] = [];
+  for (const path in cookbook) {
+    if (!path.includes("/")) indexes["(root)"].push(path);
+  }
+  for (const path in cookbook) {
+    const dirnames = path.split("/");
+    for (let index = 0; index < dirnames.length - 1; index++) {
+      const dirpath = dirnames.slice(0, index + 1).join("/");
+      if (!indexes[dirpath]) indexes[dirpath] = [];
+      if (!folderIndexes[dirpath]) folderIndexes[dirpath] = [];
+      if (index + 1 === dirnames.length - 1) {
+        indexes[dirpath].push(path);
+      } else {
+        const childDirpath = dirnames.slice(0, index + 2).join("/");
+        if (folderIndexes[dirpath].includes(childDirpath)) continue;
+        folderIndexes[dirpath].push(childDirpath);
+      }
+    }
+  }
+  for (const path in folderIndexes) {
+    if (path.includes("/") || path === "(root)") continue;
+    folderIndexes["(root)"].push(path);
+  }
+
+  const readme = (await readFile(join(cwd(), "src", "apps", "README.md"))).toString();
+  Object.keys(indexes).forEach((key) => indexes[key].length === 0 && delete indexes[key]);
+  const generatedAt = new Date();
+
+  await writeFile(
+    join(cwd(), `./generate/cookbook.json`),
+    TSON.stringify({
+      cookbook,
+      readme,
+      indexes,
+      folderIndexes,
+      generatedAt
+    })
+  );
 }
 
 await buildCookbook();

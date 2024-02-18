@@ -2,8 +2,21 @@
  * ⚠️This file is generated and modifications will be overwritten
  */
 export default {
-    generatedAt: 1707631503232,
+    generatedAt: 1708242403802,
     validate: {
-        'get': () => import('./apps/get.ts'),
+        'cookbook': () => import('./apps/cookbook.ts'),
+        'foo/bar-baz-copy-copy/cookbook-copy': () => import('./apps/foo/bar-baz-copy-copy/cookbook-copy.ts'),
+        'foo/bar-baz-copy-copy/cookbook': () => import('./apps/foo/bar-baz-copy-copy/cookbook.ts'),
+        'foo/bar-baz-copy/bar-baz-copy-copy/bar-baz-copy-copy-copy/bar-baz-copy-copy-copy-copy/cookbook-copy': () => import('./apps/foo/bar-baz-copy/bar-baz-copy-copy/bar-baz-copy-copy-copy/bar-baz-copy-copy-copy-copy/cookbook-copy.ts'),
+        'foo/bar-baz-copy/bar-baz-copy-copy/bar-baz-copy-copy-copy/bar-baz-copy-copy-copy-copy/cookbook': () => import('./apps/foo/bar-baz-copy/bar-baz-copy-copy/bar-baz-copy-copy-copy/bar-baz-copy-copy-copy-copy/cookbook.ts'),
+        'foo/bar-baz-copy/bar-baz-copy-copy/bar-baz-copy-copy-copy/cookbook-copy': () => import('./apps/foo/bar-baz-copy/bar-baz-copy-copy/bar-baz-copy-copy-copy/cookbook-copy.ts'),
+        'foo/bar-baz-copy/bar-baz-copy-copy/bar-baz-copy-copy-copy/cookbook': () => import('./apps/foo/bar-baz-copy/bar-baz-copy-copy/bar-baz-copy-copy-copy/cookbook.ts'),
+        'foo/bar-baz-copy/bar-baz-copy-copy/cookbook-copy': () => import('./apps/foo/bar-baz-copy/bar-baz-copy-copy/cookbook-copy.ts'),
+        'foo/bar-baz-copy/bar-baz-copy-copy/cookbook': () => import('./apps/foo/bar-baz-copy/bar-baz-copy-copy/cookbook.ts'),
+        'foo/bar-baz-copy/cookbook-copy': () => import('./apps/foo/bar-baz-copy/cookbook-copy.ts'),
+        'foo/bar-baz-copy/cookbook': () => import('./apps/foo/bar-baz-copy/cookbook.ts'),
+        'foo/bar-baz/cookbook-copy-copy': () => import('./apps/foo/bar-baz/cookbook-copy-copy.ts'),
+        'foo/bar-baz/cookbook-copy': () => import('./apps/foo/bar-baz/cookbook-copy.ts'),
+        'foo/bar-baz/cookbook': () => import('./apps/foo/bar-baz/cookbook.ts'),
     },
 };

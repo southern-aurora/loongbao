@@ -1,10 +1,9 @@
-/// <reference path="../types.d.ts" />
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 
 import ejs from "ejs";
 import { join } from "node:path";
 import { existsSync, mkdirSync } from "node:fs";
-import { argv, cwd, env, exit, stdout } from "node:process";
+import { argv, cwd, env, exit } from "node:process";
 import { writeFile, readFile } from "node:fs/promises";
 import { exec as nodeExec } from "node:child_process";
 import { camel, hyphen } from "@poech/camel-hump-under";
@@ -52,7 +51,7 @@ export async function generatePartial(path?: string) {
   for (let i = 0; i < partialPath.split("/").length - 1; i++) {
     importPath = importPath + "../";
   }
-  importPath = importPath + "src/app";
+  importPath = importPath + "src/apps";
   const template = `
 import typia from "typia";
 import { ExecuteResultSuccess${module?.api?.meta?.enableResultsValidate ? ", _validate" : ""} } from "loongbao";
@@ -61,7 +60,6 @@ import type * as <%= utils.camel(path.slice(0, -3).replaceAll('/', '$')) %> from
 
 type ParamsT = Parameters<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>[0];
 export const params = async (params: any) => typia.misc.validatePrune<ParamsT>(params);
-export const paramsSchema = typia.json.application<[{ data: ParamsT }], "swagger">();
 `.trim();
 
   await writeFile(filePathTmp, ejs.render(template, { ...templateVars, path: partialPath }));

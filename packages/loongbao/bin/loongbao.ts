@@ -1,12 +1,10 @@
 #!/usr/bin/env bun
 /* eslint-disable @typescript-eslint/no-misused-promises, no-console, @typescript-eslint/no-explicit-any */
 
-import { argv, cwd, exit, stdout } from "node:process";
+import { argv, cwd, exit } from "node:process";
 import { exec } from "../util/exec";
 import { join } from "node:path";
-import { rmSync, watch } from "node:fs";
 import { env } from "bun";
-import { E } from "../../../docs/assets/chunks/framework.ajfdQ9vp";
 
 const rootPath = cwd();
 const method = argv[2] as keyof typeof commands;
@@ -41,16 +39,29 @@ const commands = {
           }
         });
       } catch (error) {}
-      await new Promise((resolve) => setTimeout(resolve, Number.MAX_SAFE_INTEGER));
+      while (true) {
+        const result = await new Promise((resolve) => {
+          const wasRaw = process.stdin.isRaw;
+          process.stdin.setRawMode(true);
+          process.stdin.resume();
+          process.stdin.once("data", (data) => {
+            process.stdin.pause();
+            process.stdin.setRawMode(wasRaw);
+            resolve(data.toString());
+          });
+        });
+        // No exit function is set
+        // if (result === "q") exit(0);
+      }
     }
   },
   async "build:cookbook"() {
     await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/build-cookbook.ts"]);
   },
-  async "build:client"() {
-    await exec(join(rootPath, "packages", "client"), ["bun", "i"]);
+  async "build:dto"() {
+    await exec(join(rootPath, "packages", "dto"), ["bun", "i"]);
     await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/generate.ts"]);
-    await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/build-client.ts"]);
+    await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/build-dto.ts"]);
   }
   /**
    * The following methods have been deprecated

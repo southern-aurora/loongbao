@@ -3,7 +3,7 @@
     "lib": [
       "ESNext"
     ],
-    "outDir": "./package/client/generate",
+    "outDir": "./packages/dto/generate",
     "module": "esnext",
     "target": "esnext",
     "moduleResolution": "bundler",
@@ -25,14 +25,13 @@
     ]
   },
   "include": [
-    // only these files will be packaged as .d.ts files and placed in /packages/client.
-    "src/app/**/api.ts",
-    "src/bootstrap/**/*.ts",
+    // only these files will be packaged as .d.ts files and placed in /packages/dto.
+    "src/apps/**/*.ts",
+    "src/bootstraps/**/*.ts",
     "generate/**/*.ts",
-    "src/app/context.ts",
-    "src/app/fail-code.ts",
-    "src/app/logger.ts",
-    "src/app/meta.ts",
-    "src/app/test.ts",
+    "src/context.ts",
+    "src/fail-code.ts",
+    "src/logger.ts",
+    "src/meta.ts",
   ],
 }
