@@ -10,10 +10,12 @@ jobs:
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: "1.0.7"
+      # env
+      env:
+        BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       # run any `bun` or `bunx` command
-      - run: cd ./packages/loongbao-generator
-      - run: bun install
-      - run: bun run build
-      - run: pwd && ls
-        env:
-          BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: >-
+      cd ./packages/loongbao-generator
+      && bun install
+      && bun run build
+      && pwd && ls
