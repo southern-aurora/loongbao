@@ -15,7 +15,7 @@ jobs:
         BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       # run any `bun` or `bunx` command
       - run: >-
-      cd ./packages/loongbao-generator
-      && bun install
-      && bun run build
-      && pwd && ls
+          cd ./packages/loongbao-generator
+          && bun install
+          && bun run build
+          && pwd && ls
