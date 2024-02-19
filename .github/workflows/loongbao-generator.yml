@@ -11,11 +11,12 @@ jobs:
         with:
           bun-version: "1.0.7"
       # env
-      env:
-        BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       # run any `bun` or `bunx` command
       - run: >-
           cd ./packages/loongbao-generator
           && bun install
           && bun run build
           && pwd && ls
+
+        env:
+          BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
