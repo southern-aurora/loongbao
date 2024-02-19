@@ -4,7 +4,7 @@ import ejs from "ejs";
 import { join } from "node:path";
 import walkSync from "walk-sync";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
-import { cwd, exit, stdout } from "node:process";
+import { cwd, exit } from "node:process";
 import { unlink, writeFile } from "node:fs/promises";
 import { exec as nodeExec } from "node:child_process";
 import { camel, hyphen } from "@poech/camel-hump-under";

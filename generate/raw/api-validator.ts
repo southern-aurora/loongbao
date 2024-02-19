@@ -3,7 +3,7 @@
  */
 
 export default {
-  generatedAt: 1708242403802,
+  generatedAt: 1708336761746,
   validate: {
     'cookbook': () => import('./apps/cookbook.ts'),
     'foo/bar-baz-copy-copy/cookbook-copy': () => import('./apps/foo/bar-baz-copy-copy/cookbook-copy.ts'),

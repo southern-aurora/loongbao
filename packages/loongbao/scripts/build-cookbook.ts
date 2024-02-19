@@ -11,7 +11,7 @@ export async function buildCookbook() {
 
   const cookbook: Cookbook = {};
   for (const path of paths) {
-    const module = await import(/* @vite-ignore */ `../../../src/apps/${path}`);
+    const module = await import(/* @vite-ignore */ join(`../../../src/apps/${path}`));
     let title;
     let desc;
     const descRaw = module.readme;
@@ -225,4 +225,4 @@ export async function buildCookbook() {
   );
 }
 
-await buildCookbook();
+void buildCookbook();

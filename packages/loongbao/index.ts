@@ -23,8 +23,10 @@ export * from "./kernel/context";
 export * from "./kernel/validate";
 export * from "./kernel/cache";
 export * from "./kernel/middleware";
-export * from "./kernel/execute-api-test";
-export * from "./kernel/execute-http-server";
+
+// handler
+export * from "./define/define-http-handler";
+export * from "./define/define-api-test-handler";
 
 // loongbao
 export * from "./kernel/loongbao";

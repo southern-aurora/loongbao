@@ -1,5 +1,5 @@
 import type { URL } from "node:url";
-import type { ExecuteId, HTTPResponse } from "..";
+import type { ExecuteId, HTTPResponse, LoongbaoHTTPRequest, LoongbaoHTTPResponse } from "..";
 
 export type FrameworkContext = {
   path: string;
@@ -18,6 +18,6 @@ export type FrameworkHTTPDetail = {
   executeId: ExecuteId;
   fullurl: URL;
   ip: string;
-  request: Request;
-  response: HTTPResponse;
+  request: LoongbaoHTTPRequest;
+  response: LoongbaoHTTPResponse;
 };

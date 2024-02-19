@@ -1,10 +1,8 @@
-#!/usr/bin/env bun
 /* eslint-disable @typescript-eslint/no-misused-promises, no-console, @typescript-eslint/no-explicit-any */
 
-import { argv, cwd, exit } from "node:process";
+import { argv, cwd, env, exit } from "node:process";
 import { exec } from "../util/exec";
 import { join } from "node:path";
-import { env } from "bun";
 
 const rootPath = cwd();
 const method = argv[2] as keyof typeof commands;
