@@ -15,8 +15,7 @@ jobs:
       - run: >-
           cd ./packages/loongbao-generator
           && bun install
-          && bun run build
+          && bun build
           && pwd && ls
-
         env:
           BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
