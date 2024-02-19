@@ -1,4 +1,5 @@
 name: loongbao-generator
+on: [push]
 jobs:
   my-job:
     name: my-job
