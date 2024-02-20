@@ -21,4 +21,5 @@ jobs:
           --target bun
           && npm publish
         env:
-          BUN_AUTH_TOKEN: ${{ NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
