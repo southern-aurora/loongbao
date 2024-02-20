@@ -7,20 +7,19 @@ jobs:
     name: my-job
     runs-on: ubuntu-latest
     steps:
-      # ...
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: "1.0.7"
           registry-url: "https://registry.npmjs.org/"
+
+      - name: Publish
         env:
           BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      # run any `bun` or `bunx` command
-      - run: >-
-          echo $ACTION_VERSION
-          && echo $BUN_AUTH_TOKEN
-      - run: >-
+        run: >-
           cd ./packages/loongbao-generator
+          && echo $ACTION_VERSION
+          && echo $BUN_AUTH_TOKEN
           && pwd && ls
           && bun install --frozen-lockfile
           && bun build ./index.ts --compile --minify --outfile 
