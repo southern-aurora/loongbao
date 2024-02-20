@@ -12,7 +12,7 @@ jobs:
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: "1.0.7"
-          registry-url: "https://npm.pkg.github.com/"
+          registry-url: "https://registry.npmjs.org/"
         env:
           BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       # run any `bun` or `bunx` command
