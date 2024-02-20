@@ -1,5 +1,8 @@
 name: loongbao-generator
 on: [push]
+env:
+  ACTION_VERSION: linux-x64
+  BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 jobs:
   my-job:
     name: my-job
@@ -11,7 +14,6 @@ jobs:
         with:
           bun-version: "1.0.7"
           registry-url: "https://npm.pkg.github.com/"
-      # env
       # run any `bun` or `bunx` command
       - run: >-
           echo $ACTION_VERSION
@@ -25,6 +27,3 @@ jobs:
           --target bun
           && cd "./publish/$ACTION_VERSION"
           && npm publish
-        env:
-          ACTION_VERSION: linux-x64
-          BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
