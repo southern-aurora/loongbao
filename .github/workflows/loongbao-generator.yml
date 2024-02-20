@@ -14,8 +14,11 @@ jobs:
       # run any `bun` or `bunx` command
       - run: >-
           cd ./packages/loongbao-generator
-          && bun install
-          && bun build ./index.ts --compile --minify --outfile app --target bun
           && pwd && ls
+          && bun install
+          && bun build ./index.ts --compile --minify --outfile 
+          ./publish/linux-x64/app
+          --target bun
+          && npm publish
         env:
-          BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          BUN_AUTH_TOKEN: ${{ NPM_TOKEN }}
