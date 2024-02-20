@@ -1,5 +1,6 @@
 {
   "name": "loongbao-generator-linux-x64",
+  "author": "akirarika",
   "module": "index.ts",
   "version": "0.0.0",
   "type": "module",

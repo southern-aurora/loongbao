@@ -19,6 +19,7 @@ jobs:
           && bun build ./index.ts --compile --minify --outfile 
           ./publish/linux-x64/app
           --target bun
+          && cd ./publish/linux-x64
           && npm publish
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
