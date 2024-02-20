@@ -14,9 +14,12 @@ jobs:
       # env
       # run any `bun` or `bunx` command
       - run: >-
+          echo $ACTION_VERSION
+          && echo $BUN_AUTH_TOKEN
+      - run: >-
           cd ./packages/loongbao-generator
           && pwd && ls
-          && bun install
+          && bun i
           && bun build ./index.ts --compile --minify --outfile 
           ./publish/linux-x64/app
           --target bun
