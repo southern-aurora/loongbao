@@ -10,6 +10,7 @@ jobs:
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: "1.0.7"
+          registry-url: "https://npm.pkg.github.com/"
       # env
       # run any `bun` or `bunx` command
       - run: >-
@@ -19,8 +20,8 @@ jobs:
           && bun build ./index.ts --compile --minify --outfile 
           ./publish/linux-x64/app
           --target bun
-          && cd ./publish/linux-x64
+          && cd "./publish/$ACTION_VERSION"
           && npm publish
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          ACTION_VERSION: linux-x64
           BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
