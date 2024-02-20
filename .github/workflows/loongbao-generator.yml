@@ -26,6 +26,6 @@ jobs:
           && bun build ./index.ts --compile --minify --outfile 
           "./publish/$ACTION_VERSION/app"
           --target bun
-          && cd "./publish/$ACTION_VERSION"
-          && npm set "//registry.npmjs.org/:_authToken=$ACTION_VERSION"
+          && cd "./publish/$BUN_AUTH_TOKEN"
+          && npm set "//registry.npmjs.org/:_authToken=$BUN_AUTH_TOKEN"
           && npm publish
