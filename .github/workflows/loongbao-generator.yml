@@ -20,10 +20,12 @@ jobs:
           cd ./packages/loongbao-generator
           && echo $ACTION_VERSION
           && echo $BUN_AUTH_TOKEN
+          && echo "//registry.npmjs.org/:_authToken=$ACTION_VERSION"
           && pwd && ls
           && bun install --frozen-lockfile
           && bun build ./index.ts --compile --minify --outfile 
           "./publish/$ACTION_VERSION/app"
           --target bun
           && cd "./publish/$ACTION_VERSION"
-          && bun publish
+          && npm set "//registry.npmjs.org/:_authToken=$ACTION_VERSION"
+          && npm publish
