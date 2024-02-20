@@ -24,7 +24,7 @@ jobs:
           && pwd && ls
           && bun install --frozen-lockfile
           && bun build ./index.ts --compile --minify --outfile 
-          ./publish/linux-x64/app
+          "./publish/$ACTION_VERSION/app"
           --target bun
           && cd "./publish/$ACTION_VERSION"
           && npm publish
