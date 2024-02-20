@@ -26,4 +26,4 @@ jobs:
           "./publish/$ACTION_VERSION/app"
           --target bun
           && cd "./publish/$ACTION_VERSION"
-          && npm publish
+          && bun publish
