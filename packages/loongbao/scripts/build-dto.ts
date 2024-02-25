@@ -44,7 +44,7 @@ export async function buildDTO() {
   console.log(`(But before that, you may need to modify the package name (${join(cwd(), "packages", "dto", "package.json")}) and login to your NPM account or private NPM repository)`);
 
   if (platform !== "win32") {
-    console.log("You can publish it to npm by running this commands:");
+    console.log("You can publish it to npm by running this commands:\n");
     console.log("\u001B[0m---");
     console.log(`cd ${join(root)} \\`);
     console.log("  && npm version major \\");

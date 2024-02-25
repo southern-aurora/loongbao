@@ -42,6 +42,7 @@ module.exports = {
         "@typescript-eslint/prefer-ts-expect-error": "off",
         "@typescript-eslint/triple-slash-reference": "off",
         "@typescript-eslint/strict-boolean-expressions": "off",
+        "@typescript-eslint/no-confusing-void-expression": "off",
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/no-unnecessary-type-assertion": "off",
         "@typescript-eslint/consistent-type-definitions": ["error", "type"],

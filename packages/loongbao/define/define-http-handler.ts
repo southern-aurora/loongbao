@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { _afterHTTPRequestMiddlewares, _beforeHTTPResponseMiddlewares, configFramework, loggerPushTags, loggerSubmit, useLogger, loggerSubmitAll, runtime } from "..";
-import type { ExecuteId, LoongbaoApp } from "..";
+import type { ExecuteId, LoongbaoApp, Mixin } from "..";
 import { hanldeCatchError } from "../util/handle-catch-error";
 import { routerHandler } from "../../../src/router";
 import schema from "../../../generate/api-schema";
@@ -17,10 +17,10 @@ export type ExecuteHttpServerOptions = {
    * @param request
    * @returns
    */
-  executeIdGenerator?: (request: LoongbaoHTTPRequest) => string | Promise<string>;
+  executeIdGenerator?: (request: Request) => string | Promise<string>;
 };
 
-export async function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpServerOptions = {}) {
+export function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpServerOptions = {}) {
   // If an unexpected error occurs, exit the process.
   // For modern production environments such as Serverless, Kubernetes, or Docker Compose:
   // The process will automatically restart after exiting.
@@ -34,18 +34,18 @@ export async function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpSe
   });
 
   const fetch = async (request: LoongbaoHTTPRequest) => {
-    const fullurl = new URL(request.url, `http://${request.headers.get("host") ?? "localhost"}`);
-    const executeId = (options?.executeIdGenerator ? await options.executeIdGenerator(request) : `exec#${createId()}`) as ExecuteId;
+    const fullurl = new URL(request.request.url, `http://${request.request.headers.get("host") ?? "localhost"}`);
+    const executeId = (options?.executeIdGenerator ? await options.executeIdGenerator(request.request) : `exec#${createId()}`) as ExecuteId;
     runtime.httpServer.executeIds.add(executeId);
-    const ip = (request.headers.get("x-forwarded-for") as string | undefined)?.split(",")[0] ?? "0.0.0.0";
-    const headers = request.headers;
+    const ip = (request.request.headers.get("x-forwarded-for") as string | undefined)?.split(",")[0] ?? "0.0.0.0";
+    const headers = request.request.headers;
 
     loggerPushTags(executeId, {
       from: "http-server",
       fullUrl: fullurl.pathname,
       ip,
-      method: request.method,
-      requestHeaders: request.headers.toJSON(),
+      method: request.request.method,
+      requestHeaders: request.request.headers.toJSON(),
       timein: new Date().getTime()
     });
 
@@ -62,7 +62,7 @@ export async function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpSe
 
     try {
       // Process OPTIONS pre inspection requests
-      if (request.method === "OPTIONS") {
+      if (request.request.method === "OPTIONS") {
         await loggerSubmit(executeId);
         runtime.httpServer.executeIds.delete(executeId);
 
@@ -87,7 +87,7 @@ export async function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpSe
       if (!(pathstr in schema.apiMethodsSchema)) {
         const redirectPath = await routerHandler(pathstr, fullurl);
         if (!redirectPath) {
-          const rawbody = await request.text();
+          const rawbody = await request.request.text();
           loggerPushTags(executeId, {
             body: rawbody || "no body"
           });
@@ -116,7 +116,7 @@ export async function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpSe
         ip,
         executeId,
         fullurl,
-        request,
+        request: request.request,
         response
       };
 
@@ -126,7 +126,7 @@ export async function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpSe
         await m.middleware(headers, detail);
       }
 
-      const rawbody = await request.text();
+      const rawbody = await request.request.text();
       loggerPushTags(executeId, {
         body: rawbody || "no body"
       });
@@ -140,7 +140,7 @@ export async function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpSe
           params = TSON.parse(rawbody);
         } catch (error) {
           const logger = useLogger(executeId);
-          logger.log("TIP: body is not json, the content is not empty, but the content is not in a valid JSON format. The original content value can be retrieved via request.text()");
+          logger.log("TIP: body is not json, the content is not empty, but the content is not in a valid JSON format. The original content value can be retrieved via request.request.text()");
           params = undefined;
         }
       }
@@ -188,27 +188,22 @@ export async function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpSe
     await loggerSubmit(executeId);
     runtime.httpServer.executeIds.delete(executeId);
 
-    return response;
+    return new Response(response.body, response);
   };
 
-  // eslint-disable-next-line no-console
-  console.log(`🧊 Http server started at :`, configFramework.port);
-
-  return {
-    fetch
-  };
+  return fetch;
 }
 
 export type LoongbaoHTTPRequest = {
-  //
-  url: string;
-  headers: Headers;
-  method: string;
-  text: () => Promise<string>;
+  request: Request;
 };
-export type LoongbaoHTTPResponse = {
-  //
-  body: string;
-  status: number;
-  headers: Record<string, string>;
-};
+
+export type LoongbaoHTTPResponse = Mixin<
+  ResponseInit,
+  {
+    //
+    body: string;
+    status: number;
+    headers: Record<string, string>;
+  }
+>;

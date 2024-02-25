@@ -1,25 +1,31 @@
 /**
  * ⚠️ This file is generated and modifications will be overwritten
  */
-import type * as get from '../src/apps/get';
+import type * as cookbook from '../src/apps/cookbook';
+import type * as helloWorld$say from '../src/apps/hello-world/say';
 declare const _default: {
     apiValidator: {
         generatedAt: number;
         validate: {
-            get: () => Promise<typeof import("./products/apps/get.ts")>;
+            cookbook: () => Promise<typeof import("./products/apps/cookbook.ts")>;
+            'hello-world/say': () => Promise<typeof import("./products/apps/hello-world/say.ts")>;
         };
     };
     apiMethodsSchema: {
-        get: () => {
-            module: Promise<typeof get>;
+        cookbook: () => {
+            module: Promise<typeof cookbook>;
+        };
+        'hello-world/say': () => {
+            module: Promise<typeof helloWorld$say>;
         };
     };
     apiMethodsTypeSchema: {
-        get: typeof get;
+        cookbook: typeof cookbook;
+        'hello-world/say': typeof helloWorld$say;
     };
     apiTestsSchema: {
-        get: () => {
-            module: Promise<typeof get>;
+        'hello-world/say': () => {
+            module: Promise<typeof helloWorld$say>;
         };
     };
 };

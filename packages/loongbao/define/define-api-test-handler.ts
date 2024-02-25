@@ -3,8 +3,13 @@ import { exit } from "node:process";
 import schema from "../../../generate/api-schema";
 import { type LoongbaoApp } from "..";
 
-export const defineApiTestHandler = async <Paths extends Array<keyof (typeof schema)["apiTestsSchema"]>>(app: LoongbaoApp, paths: Paths | string | 1) => {
+export const defineApiTestHandler = async <Paths extends Array<keyof (typeof schema)["apiTestsSchema"]>>(app: LoongbaoApp, paths: Paths | string | 1 | undefined) => {
   console.log(`🧊 Loongbao Api Testing..\n`);
+
+  if (!paths) {
+    console.log("🧊 No paths specified.");
+    exit(1);
+  }
 
   if (paths === "1" || paths === 1) {
     paths = Object.keys(schema.apiTestsSchema) as unknown as Paths;

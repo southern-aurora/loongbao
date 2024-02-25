@@ -31,6 +31,20 @@ export default defineConfig({
               <span class="lang-zh">介绍</span>
             `,
             link: "/"
+          },
+          {
+            text: `
+              <span class="lang-en">Install</span>
+              <span class="lang-zh">安装</span>
+            `,
+            link: "/docs/install"
+          },
+          {
+            text: `
+              <span class="lang-en">Quick Start</span>
+              <span class="lang-zh">快速开始</span>
+            `,
+            link: "/docs/quick-start"
           }
         ]
       },
@@ -41,21 +55,6 @@ export default defineConfig({
         `,
         link: "/old/docs/install",
         items: [
-          {
-            text: `
-              <span class="lang-en">Index</span>
-              <span class="lang-zh">首页</span>
-            `,
-            items: [
-              {
-                text: `
-                  <span class="lang-en">Introduction</span>
-                  <span class="lang-zh">介绍</span>
-                `,
-                link: "/"
-              }
-            ]
-          },
           {
             text: `
               <span class="lang-en">Overview</span>

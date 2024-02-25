@@ -1,5 +1,10 @@
 name: loongbao-generator
-on: [push]
+on:
+  workflow_dispatch:
+    inputs:
+      packageVersion:
+        description: 'Package Version'
+        required: true
 env:
   ACTION_VERSION: linux-x64
 jobs:
@@ -12,20 +17,21 @@ jobs:
         with:
           bun-version: "1.0.7"
           registry-url: "https://registry.npmjs.org/"
-
       - name: Publish
         env:
+          NPM_PACKAGE_VERSION: ${{ github.event.inputs.packageVersion }}
           BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: >-
-          cd ./packages/loongbao-generator
+          mkdir -r ./packages/loongbao-generator/publish/$ACTION_VERSION/app
+          && cd ./packages/loongbao-generator
           && echo $ACTION_VERSION
           && echo $BUN_AUTH_TOKEN
           && echo "//registry.npmjs.org/:_authToken=$BUN_AUTH_TOKEN"
           && pwd && ls
           && bun install --frozen-lockfile
-          && bun build ./index.ts --compile --minify --outfile 
+          && bun build ./index.ts --compile --outfile 
           "./publish/$ACTION_VERSION/app"
           --target bun
           && cd "./publish/$ACTION_VERSION"
           && npm set "//registry.npmjs.org/:_authToken=$BUN_AUTH_TOKEN"
-          && npm publish
+          && npm publish --new-version "$NPM_PACKAGE_VERSION"

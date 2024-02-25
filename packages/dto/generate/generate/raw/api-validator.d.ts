@@ -4,7 +4,8 @@
 declare const _default: {
     generatedAt: number;
     validate: {
-        get: () => Promise<typeof import("./apps/get.ts")>;
+        cookbook: () => Promise<typeof import("./apps/cookbook.ts")>;
+        'hello-world/say': () => Promise<typeof import("./apps/hello-world/say.ts")>;
     };
 };
 export default _default;

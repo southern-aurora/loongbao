@@ -3,6 +3,8 @@
 import { argv, cwd, env, exit } from "node:process";
 import { exec } from "../util/exec";
 import { join } from "node:path";
+import { $ } from "bun";
+import { readFile } from "node:fs/promises";
 
 const rootPath = cwd();
 const method = argv[2] as keyof typeof commands;
@@ -12,30 +14,30 @@ const commands = {
   async generate() {
     await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/generate.ts"]);
   },
-  async dev() {
-    await exec(rootPath, ["bun", "--inspect", "--hot", "./index.ts"]);
+  async "build:cookbook"() {
+    await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/build-cookbook.ts"]);
   },
-  async start() {
-    await exec(rootPath, ["bun", "./index.ts"]);
+  async "build:dto"() {
+    await exec(join(rootPath, "packages", "dto"), ["bun", "i"]);
+    await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/generate.ts"]);
+    await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/build-dto.ts"]);
   },
   async test(files?: string, reserved?: string) {
+    const run = async () => {
+      const packageJson = await JSON.parse((await readFile(join(rootPath, "package.json"))).toString());
+      await $`${{ raw: packageJson.scripts.start }}`.env({
+        ...env,
+        LOONGBAO_RUN_MODE: "test",
+        LOONGBAO_TEST: files ?? "1"
+      });
+    };
     if (!env.LOONGBAO_TEST_RESERVED && reserved !== "1") {
       // Normal test
-      await exec(rootPath, ["bun", "./index.ts"], {
-        env: {
-          ...env,
-          LOONGBAO_TEST: files ?? "1"
-        }
-      });
+      await run();
     } else {
       // Keep after testing, the terminal never exits and is usually used for various IDE extensions.
       try {
-        await exec(rootPath, ["bun", "./index.ts"], {
-          env: {
-            ...env,
-            LOONGBAO_TEST: files ?? "1"
-          }
-        });
+        await run();
       } catch (error) {}
       while (true) {
         const result = await new Promise((resolve) => {
@@ -52,14 +54,6 @@ const commands = {
         // if (result === "q") exit(0);
       }
     }
-  },
-  async "build:cookbook"() {
-    await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/build-cookbook.ts"]);
-  },
-  async "build:dto"() {
-    await exec(join(rootPath, "packages", "dto"), ["bun", "i"]);
-    await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/generate.ts"]);
-    await exec(rootPath, ["bun", "./node_modules/loongbao/scripts/build-dto.ts"]);
   }
   /**
    * The following methods have been deprecated

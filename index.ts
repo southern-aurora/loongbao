@@ -1,28 +1,36 @@
-import { createLoongbaoApp, defineApiTestHandler, defineHttpHandler } from "loongbao";
-import { httpIOConsoleLog } from "./src/middlewares/http-io-console-log";
-import { helloWorld } from "./src/bootstraps/hello-world";
-import { createId } from "@paralleldrive/cuid2";
+import { configFramework, createLoongbaoApp, defineApiTestHandler, defineHttpHandler, envToNumber } from "loongbao";
 import { env } from "node:process";
-import { Hono } from "hono";
+import { helloWorld } from "./src/bootstraps/hello-world";
+import { httpIOConsoleLog } from "./src/middlewares/http-io-console-log";
+import { useDrizzle } from "./src/uses/drizzle";
 
-// create loongbao
 export const loongbao = await createLoongbaoApp({
   bootstraps: () => [helloWorld()],
   middlewares: () => [httpIOConsoleLog()]
 });
 
-if (!env.LOONGBAO_TEST) {
+console.warn("RUN_MODE", configFramework.loongbaoRunMode);
+
+if (configFramework.loongbaoRunMode === "DEFAULT") {
   // start http server
-  const loongbaoHttpHandler = await defineHttpHandler(loongbao, {
-    executeIdGenerator: (request) => request.headers.get("X-Scf-Request-Id") ?? createId()
+  const httpHandler = defineHttpHandler(loongbao);
+  // if you are using Bun
+  Bun.serve({
+    port: envToNumber(env.PORT, 9000),
+    fetch(request) {
+      return httpHandler({ request });
+    }
   });
-  // combined with Hono
-  const app = new Hono();
-  app.all("*", async (honoContext) => {
-    const response = await loongbaoHttpHandler.fetch(honoContext.req.raw);
-    return new Response(response.body, response);
-  });
-} else {
+}
+
+if (configFramework.loongbaoRunMode === "API_TEST") {
   // decide whether to enter api test mode based on environment
-  await defineApiTestHandler(loongbao, env.LOONGBAO_TEST);
+  await defineApiTestHandler(loongbao, configFramework.loongbaoTest);
+}
+
+if (configFramework.loongbaoRunMode === "MIGRATE") {
+  // (optional) migrate the database structure to the production environment
+  const drizzle = await useDrizzle();
+  const { migrate } = await import("drizzle-orm/mysql2/migrator");
+  await migrate(drizzle, { migrationsFolder: "drizzle" });
 }

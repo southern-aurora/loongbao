@@ -11,27 +11,32 @@ export async function buildCookbook() {
 
   const cookbook: Cookbook = {};
   for (const path of paths) {
-    const module = await import(/* @vite-ignore */ join(`../../../src/apps/${path}`));
+    // const module = await import(/* @vite-ignore */ join(`../../../src/apps/${path}`));
+    const code = (await readFile(join(cwd(), `./src/apps/${path}.ts`))).toString();
+    const codeLines = code.split("\n");
     let title;
     let desc;
-    const descRaw = module.readme;
+    const descRaw = /\n\/\*\*\n[\s\S]+?\*\//.exec(code)?.[0] ?? "";
+
     if (descRaw) {
       const descRawLines = descRaw.split("\n");
       if (descRawLines.at(0)?.trim() === "") descRawLines.shift();
       if (descRawLines.at(-1)?.trim() === "") descRawLines.pop();
+      let first = true;
       for (let index = 0; index < descRawLines.length; index++) {
-        const descRawLine = descRawLines[index];
-        if (index === 0) {
+        const descRawLine = descRawLines[index].replace(/^[/ ]+?[*]*/, "").replace(/[*]*\/$/, "");
+
+        if (!descRawLine) continue;
+        if (first) {
           title = descRawLine.replace(/#/g, "").trim();
           // Originally the title was in the first line, desc is the rest of it, now desc contains complete markdown content.
           // continue;
         }
+        first = false;
         desc = (desc ?? "") + "\n" + descRawLine.trim();
       }
     }
 
-    const code = (await readFile(join(cwd(), `./src/apps/${path}.ts`))).toString();
-    const codeLines = code.split("\n");
     let apiParams = /action\([\s\S]+?\)/.exec(code)?.[0] ?? ""; // The intention of the following code is to extract the parameter part of the action.
     apiParams = /\([\s\S]*,/.exec(apiParams)?.[0] ?? "";
     apiParams = apiParams.slice(0, -1);

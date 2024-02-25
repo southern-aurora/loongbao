@@ -1,5 +1,10 @@
 import { env, type SpawnOptions } from "bun";
 
+/**
+ * This is a legacy wrapper that was written before $ Shell was created.
+ * All relevant code should be replaced with $ Shell in the future.
+ */
+
 export const exec = async (cwd: string, command: Array<string>, options: Partial<SpawnOptions.OptionsObject> = {}) => {
   return new Promise((resolve, reject) => {
     if (!("cwd" in options)) options.cwd = cwd;

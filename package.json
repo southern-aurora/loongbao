@@ -4,27 +4,31 @@
   "private": true,
   "module": "index.ts",
   "scripts": {
-    "generate": "loongbao generate",
-    "dev": "loongbao dev",
-    "test": "loongbao test",
-    "build:dto": "loongbao build:dto",
-    "build:cookbook": "loongbao build:cookbook",
+    "start": "bun run ./index.ts",
+    "dev": "bun run --inspect --hot ./index.ts",
     "build": "bun build ./index.ts --compile --minify --outfile app --target bun",
-    "start": "bun ./index.ts"
+    "migrate": "export LOONGBAO_RUN_MODE=MIGRATE && drizzle-kit generate:mysql && bun run ./index.ts",
+    "test": "loongbao test",
+    "generate": "loongbao generate",
+    "build:dto": "loongbao build:dto",
+    "build:cookbook": "loongbao build:cookbook"
   },
   "peerDependencies": {},
   "trustedDependencies": [],
   "dependencies": {
+    "@hattip/adapter-node": "^0.0.43",
     "@paralleldrive/cuid2": "^2.2.2",
     "@southern-aurora/tson": "2.0.1",
     "@types/node": "^20.5.1",
-    "hono": "^4.0.4",
-    "loongbao": "./packages/loongbao",
-    "typia": "^5.4.7"
+    "drizzle-orm": "^0.29.4",
+    "loongbao": "file:./packages/loongbao",
+    "mysql2": "^3.9.1",
+    "typia": "^5.4.10"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@typescript-eslint/eslint-plugin": "^6.7.5",
+    "drizzle-kit": "^0.20.14",
     "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-config-standard-with-typescript": "^39.1.1",
