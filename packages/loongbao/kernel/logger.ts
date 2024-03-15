@@ -59,7 +59,7 @@ export const loggerController = (() => {
   const insertItem = (executeId: ExecuteId, level: LoggerLevel, description: string, params: Array<unknown>): void => {
     let executeIds: Array<string> = [];
     if (executeId === "global") {
-      executeIds = Array.from(new Set([...Array.from(runtime.httpServer.executeIds), ...Array.from(runtime.execute.executeIds)]));
+      executeIds = Array.from(new Set([...Array.from(runtime.execute.executeIds), ...Array.from(runtime.execute.executeIds)]));
     } else {
       executeIds = [executeId];
     }

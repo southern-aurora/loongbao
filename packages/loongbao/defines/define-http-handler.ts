@@ -1,13 +1,13 @@
 /* eslint-disable no-console */
-import { _afterHTTPRequestMiddlewares, _beforeHTTPResponseMiddlewares, configFramework, loggerPushTags, loggerSubmit, useLogger, loggerSubmitAll, runtime } from "..";
+import { configFramework, loggerPushTags, loggerSubmit, useLogger, loggerSubmitAll, runtime, MiddlewareEvent } from "..";
 import type { ExecuteId, LoongbaoApp, Mixin } from "..";
-import { hanldeCatchError } from "../util/handle-catch-error";
+import { hanldeCatchError } from "../utils/handle-catch-error";
 import { routerHandler } from "../../../src/router";
 import schema from "../../../generate/api-schema";
 import { failCode } from "../../../src/fail-code";
-import { createId } from "@paralleldrive/cuid2";
 import process, { exit } from "node:process";
 import { TSON } from "@southern-aurora/tson";
+import { createUlid } from "../utils/create-ulid";
 
 export type ExecuteHttpServerOptions = {
   /**
@@ -35,8 +35,9 @@ export function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpServerOp
 
   const fetch = async (request: LoongbaoHTTPRequest) => {
     const fullurl = new URL(request.request.url, `http://${request.request.headers.get("host") ?? "localhost"}`);
-    const executeId = (options?.executeIdGenerator ? await options.executeIdGenerator(request.request) : `exec#${createId()}`) as ExecuteId;
-    runtime.httpServer.executeIds.add(executeId);
+    const executeId = (options?.executeIdGenerator ? await options.executeIdGenerator(request.request) : createUlid()) as ExecuteId;
+    runtime.execute.executeIds.add(executeId);
+    const logger = useLogger(executeId);
     const ip = (request.request.headers.get("x-forwarded-for") as string | undefined)?.split(",")[0] ?? "0.0.0.0";
     const headers = request.request.headers;
 
@@ -64,7 +65,7 @@ export function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpServerOp
       // Process OPTIONS pre inspection requests
       if (request.request.method === "OPTIONS") {
         await loggerSubmit(executeId);
-        runtime.httpServer.executeIds.delete(executeId);
+        runtime.execute.executeIds.delete(executeId);
 
         return new Response("", {
           headers: {
@@ -100,7 +101,7 @@ export function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpServerOp
           });
 
           await loggerSubmit(executeId);
-          runtime.httpServer.executeIds.delete(executeId);
+          runtime.execute.executeIds.delete(executeId);
 
           return new Response(response.body, response);
         }
@@ -122,9 +123,7 @@ export function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpServerOp
 
       // execute api
       // after request middleware
-      for (const m of _afterHTTPRequestMiddlewares) {
-        await m.middleware(headers, detail);
-      }
+      await MiddlewareEvent.handle("afterHTTPRequest", [headers, detail]);
 
       const rawbody = await request.request.text();
       loggerPushTags(executeId, {
@@ -137,7 +136,7 @@ export function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpServerOp
         params = undefined;
       } else {
         try {
-          params = TSON.parse(rawbody);
+          params = JSON.parse(rawbody);
         } catch (error) {
           const logger = useLogger(executeId);
           logger.log("TIP: body is not json, the content is not empty, but the content is not in a valid JSON format. The original content value can be retrieved via request.request.text()");
@@ -149,27 +148,22 @@ export function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpServerOp
         params
       });
 
-      const result = await app.executeCore(pathstr, params, headers, {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      const result = await app._executeCoreToJson(pathstr, params, headers, {
         executeId,
+        logger,
         detail
       });
 
-      if (response.body === "") {
-        // @ts-ignore
-        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-explicit-any
-        const resultTSONed: any = TSON.stringify(result);
-        response.body = response.body + resultTSONed;
-      } else if (response.body === undefined || response.body === null) {
-        response.body = "";
-      }
+      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-explicit-any
+      response.body = `${response.body ?? ""}${result}`;
 
       // before response middleware
       const middlewareResponse = {
         value: response.body
       };
-      for (const m of _beforeHTTPResponseMiddlewares) {
-        await m.middleware(middlewareResponse, detail);
-      }
+      await MiddlewareEvent.handle("beforeHTTPResponse", [middlewareResponse, detail]);
 
       response.body = middlewareResponse.value;
     } catch (error) {
@@ -181,12 +175,12 @@ export function defineHttpHandler(app: LoongbaoApp, options: ExecuteHttpServerOp
       status: response.status,
       responseHeaders: response.headers,
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      body: response.body || "no body",
+      body: response.body || "",
       timeout: new Date().getTime()
     });
 
     await loggerSubmit(executeId);
-    runtime.httpServer.executeIds.delete(executeId);
+    runtime.execute.executeIds.delete(executeId);
 
     return new Response(response.body, response);
   };

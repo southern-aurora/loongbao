@@ -81,16 +81,17 @@ export async function generateApp() {
       importPath = importPath + "src/apps";
       const template = `
 import typia from "typia";
-import { ExecuteResultSuccess${module?.api?.meta?.enableResultsValidate ? ", _validate" : ""} } from "loongbao";
+import { _validate, type ExecuteResultSuccess } from "loongbao";
 import { type TSONEncode } from "@southern-aurora/tson";
 import type * as <%= utils.camel(path.slice(0, -3).replaceAll('/', '$')) %> from '${importPath}/<%= path.slice(0, -3) %>';
 
 type ParamsT = Parameters<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>[0];
 export const params = async (params: any) => typia.misc.validatePrune<ParamsT>(params);
+type ResultsT = Awaited<ReturnType<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>>;
+export const results = async (results: any) => { _validate(typia.validate<TSONEncode<ExecuteResultSuccess<ResultsT>>>(results)); return typia.json.stringify<TSONEncode<ExecuteResultSuccess<ResultsT>>>(results); };
+
 `.trim();
       // export const paramsSchema = typia.json.application<[{ data: ParamsT }], "swagger">();
-      // type HTTPResultsT = Awaited<ReturnType<typeof <%= utils.camel(path.replaceAll('/', '$').slice(0, -${3})) %>['api']['action']>>;
-      // export const HTTPResults = async (results: any) => { ${module?.api?.meta?.enableResultsValidate ? "_validate(typia.validate<TSONEncode<ExecuteResultSuccess<HTTPResultsT>>>(results));" : ""} return typia.json.stringify<TSONEncode<ExecuteResultSuccess<HTTPResultsT>>>(results); };
 
       await writeFile(filePath, ejs.render(template, { ...templateVars, path }));
     }
@@ -143,17 +144,6 @@ export default {
 }
 `.trim();
   await writeFile(join(cwd(), "generate", "raw", "api-validator.ts"), ejs.render(apiValidatorTemplate, templateVars));
-
-  // database
-  if (existsSync(join(cwd(), "src", "databases"))) {
-    const filePath = join(cwd(), "generate", "database-schema.ts");
-    const databaseFiles = walkSync(join(cwd(), "src", "databases"), {
-      directories: false
-    });
-    const template = `<% for (const path of ${"databaseFiles"}) { %>export * from '${"../src/databases"}/<%= path.slice(0, -3) %>'
-<% } %>`;
-    await writeFile(filePath, ejs.render(template, { databaseFiles }));
-  }
 
   await new Promise((resolve) =>
     nodeExec("bun run ./node_modules/typia/lib/executable/typia.js generate --input generate/raw --output generate/products --project tsconfig.json", (e) => {

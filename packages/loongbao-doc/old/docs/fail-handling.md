@@ -8,10 +8,10 @@ title: Fail Handling
 
 在 Loongbao 中，无论哪种失败情况，我们都应该通过抛出异常的方式，来中断当前请求，而不是通过 `return` 来阻止后续代码的执行。
 
-而对于后者，即业务相关的失败情况，我们可以使用 `defineFail` 方法来主动抛出异常，以向客户端提供明确的失败响应。例如，当数据不存在时：
+而对于后者，即业务相关的失败情况，我们可以使用 `reject` 方法来主动抛出异常，以向客户端提供明确的失败响应。例如，当数据不存在时：
 
 ```ts
-throw defineFail("not-found", undefined);
+throw reject("not-found", undefined);
 ```
 
 通过这种方式，我们能够更精准地告知客户端请求失败的原因，从而使系统更加健壮和可靠。对于调用者，将得到这样的响应：
@@ -55,10 +55,10 @@ export const failCode = {
 
 ## 参数
 
-在调用 `defineFail` 方法时，您可以通过传入的参数来改变最终向客户端响应的消息信息。这样，您可以根据需要灵活地定制错误消息。
+在调用 `reject` 方法时，您可以通过传入的参数来改变最终向客户端响应的消息信息。这样，您可以根据需要灵活地定制错误消息。
 
 ```ts
-throw defineFail("access-exceeded", { path: "/foo/bar", counter: 64 });
+throw reject("access-exceeded", { path: "/foo/bar", counter: 64 });
 ```
 
 需要注意的是，该方法**只允许**传递一个参数。如果您有多个参数需要返回，请尝试像上面的例子一样，通过返回一个对象来实现。这样，您可以将多个参数封装在一个对象中，以便进行传递和处理。

@@ -1,0 +1,12 @@
+{
+  "name": "loongbao-drizzle",
+  "module": "index.ts",
+  "version": "0.1.2",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

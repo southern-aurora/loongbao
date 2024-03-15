@@ -15,7 +15,7 @@ Middleware 没有自己专属的目录，而是存放在 `/src/bootstrap` 目录
 ```ts
 // file: /src/bootstrap/middleware-your-example.ts
 
-import { defineFail, useMeta, useMiddleware } from "loongbao";
+import { reject, useMeta, useMiddleware } from "loongbao";
 
 export default function () {
   const middleware = useMiddleware(0);
@@ -77,7 +77,7 @@ const middleware = useMiddleware(your_priority_index);
 
 // file: /src/bootstrap/middleware-your-example.ts
 
-import { defineFail, useMeta, useMiddleware } from "loongbao";
+import { reject, useMeta, useMiddleware } from "loongbao";
 
 export default function () {
   const middleware1 = useMiddleware(1);

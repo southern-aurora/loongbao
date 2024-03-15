@@ -1,6 +1,6 @@
 import type { Config } from 'drizzle-kit';
 
-export default {
+const drizzleConfig = {
   schema: './generate/database-schema.ts',
   out: './drizzle',
   driver: 'mysql2', // 'pg' | 'mysql2' | 'better-sqlite' | 'libsql' | 'turso'
@@ -11,4 +11,6 @@ export default {
     password: "root",
     database: "test"
   },
-} satisfies Config;
+} satisfies Config
+
+export default drizzleConfig;

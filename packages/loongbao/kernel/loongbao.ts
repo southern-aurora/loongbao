@@ -1,15 +1,14 @@
 /* eslint-disable no-console, @typescript-eslint/no-invalid-void-type, @typescript-eslint/await-thenable, @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any */
-import { _sortMiddleware, _afterExecuteMiddlewares, _beforeExecuteMiddlewares, _bootstrapMiddlewares, _middlewareHanlder, type MiddlewareOptions } from "./middleware";
-import { createId } from "@paralleldrive/cuid2";
+import { type MiddlewareOptions, _middlewares, MiddlewareEvent } from "./middleware";
 import schema from "../../../generate/api-schema";
 import type { Context } from "../../../src/context";
 import { failCode } from "../../../src/fail-code";
 import type { FrameworkContext } from "./context";
-
-import { type Mixin, type ExecuteId, type Fail, type FailEnumerates, configFramework, loggerPushTags, loggerSubmit, runtime } from "..";
-import { hanldeCatchError } from "../util/handle-catch-error";
+import { type Mixin, type ExecuteId, type Fail, type FailEnumerates, loggerPushTags, loggerSubmit, runtime, TSON, type Logger, useLogger } from "..";
+import { hanldeCatchError } from "../utils/handle-catch-error";
 import { _validate } from "./validate";
 import { cwd, exit } from "node:process";
+import { createUlid } from "../utils/create-ulid";
 
 export type LoongbaoAppOptions = {
   /**
@@ -23,7 +22,7 @@ export type LoongbaoAppOptions = {
    * @description
    * When Loongbao is launched, the closer it is to the front of the array, the more it is on the outer layer of the "onion".
    */
-  middlewares?: () => Array<MiddlewareOptions & { isMiddleware: true }>;
+  middlewares?: () => Array<MiddlewareOptions>;
   /**
    * maxRequest
    * @description
@@ -56,7 +55,9 @@ export async function createLoongbaoApp(loongbaoAppOptions: LoongbaoAppOptions =
 
   const loongbaoApp = {
     execute: _execute,
-    executeCore: _executeCore
+    executeToJson: _executeToJson,
+    _executeCore,
+    _executeCoreToJson
   };
 
   if (loongbaoAppOptions.bootstraps) {
@@ -64,17 +65,29 @@ export async function createLoongbaoApp(loongbaoAppOptions: LoongbaoAppOptions =
   }
 
   if (loongbaoAppOptions.middlewares) {
+    MiddlewareEvent.define("bootstrap", (a, b) => a.index - b.index);
+    MiddlewareEvent.define("beforeExecute", (a, b) => a.index - b.index);
+    MiddlewareEvent.define("afterExecute", (a, b) => b.index - a.index);
+    MiddlewareEvent.define("afterHTTPRequest", (a, b) => a.index - b.index);
+    MiddlewareEvent.define("beforeHTTPResponse", (a, b) => b.index - a.index);
+
     const middlewares = loongbaoAppOptions.middlewares();
 
     for (let index = 0; index < middlewares.length; index++) {
       const middlewareOptions = middlewares[index];
-      _middlewareHanlder(index, middlewareOptions);
+      for (const name in middlewareOptions) {
+        let middleware = _middlewares.get(name);
+        if (middleware === undefined) {
+          middleware = [];
+          _middlewares.set(name, middleware);
+        }
+        const id = createUlid();
+        middleware.push({ id, index, middleware: middlewareOptions[name] });
+      }
     }
-    await _sortMiddleware();
-    for (const m of _bootstrapMiddlewares) {
-      // @ts-ignore
-      await m.middleware(loongbaoApp);
-    }
+    MiddlewareEvent._sort();
+
+    await MiddlewareEvent.handle("bootstrap", [loongbaoApp]);
   }
 
   console.log(`🧊 Loongbao is running on : ${cwd()}`);
@@ -83,7 +96,9 @@ export async function createLoongbaoApp(loongbaoAppOptions: LoongbaoAppOptions =
 }
 
 async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema"], Result extends Awaited<ReturnType<(typeof schema)["apiMethodsTypeSchema"][Path]["api"]["action"]>>>(path: Path, params: Parameters<(typeof schema)["apiMethodsTypeSchema"][Path]["api"]["action"]>[0] | string, headersInit: Record<string, string> | Headers = {}, options?: ExecuteOptions): Promise<ExecuteResult<Result>> {
-  const executeId = (options?.executeId ?? `exec#${createId()}`) as ExecuteId;
+  const executeId = (options?.executeId ?? createUlid()) as ExecuteId;
+  const logger = useLogger(executeId);
+  runtime.execute.executeIds.add(executeId);
 
   loggerPushTags(executeId, {
     from: "execute",
@@ -95,6 +110,7 @@ async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema
   const result: any = await _executeCore(path, params, headersInit, {
     ...options,
     executeId,
+    logger,
     onAfterHeaders: (headers) => {
       loggerPushTags(executeId, {
         headers: headers.toJSON()
@@ -104,13 +120,20 @@ async function _execute<Path extends keyof (typeof schema)["apiMethodsTypeSchema
 
   loggerPushTags(executeId, { result });
   await loggerSubmit(executeId);
+  runtime.execute.executeIds.delete(executeId);
 
   return result;
 }
 
+/**
+ * executeCore is a low-level API that is useful only when you want to execute the loongbao API without using execute or httpServer.
+ * It only does the most basic thing internally, which is calling the API. The external handling of functions such as making executeId, logging, middleware, etc., are all handled externally.
+ * Both execute and httpServer essentially call executeCore.
+ */
 async function _executeCore<Path extends keyof (typeof schema)["apiMethodsTypeSchema"], Result extends Awaited<ReturnType<(typeof schema)["apiMethodsTypeSchema"][Path]["api"]["action"]>>>(path: Path, params: Parameters<(typeof schema)["apiMethodsTypeSchema"][Path]["api"]["action"]>[0] | string, headersInit: Record<string, string> | Headers = {}, options: ExecuteCoreOptions): Promise<ExecuteResult<Result>> {
   const executeId = options.executeId as ExecuteId;
-  runtime.execute.executeIds.add(executeId);
+
+  params = TSON.decode(params);
 
   if (runtime.maxRequest.enable) {
     if (runtime.maxRequest.counter >= runtime.maxRequest.expected) {
@@ -130,7 +153,6 @@ async function _executeCore<Path extends keyof (typeof schema)["apiMethodsTypeSc
         data: undefined
       }
     } satisfies ExecuteResult<Result>;
-    runtime.execute.executeIds.delete(executeId);
 
     return result;
   }
@@ -152,23 +174,27 @@ async function _executeCore<Path extends keyof (typeof schema)["apiMethodsTypeSc
     executeId,
     path,
     headers,
-    detail: options?.detail
+    logger: options.logger,
+    detail: options?.detail ?? {}
   };
 
   let result: { value: Result };
   try {
     // before execute middleware
-    for (const m of _beforeExecuteMiddlewares) {
-      await m.middleware(context);
-    }
+    await MiddlewareEvent.handle("beforeExecute", [context]);
 
     // check type
     // @ts-ignore
     _validate(await (await schema.apiValidator.validate[path]()).params(params));
 
     // execute api
-    // @ts-ignore
-    const api = schema.apiMethodsSchema[path]();
+    let api: any;
+    if (apis.has(path)) api = apis.get(path);
+    else {
+      // @ts-ignore
+      api = schema.apiMethodsSchema[path]();
+      apis.set(path, api);
+    }
     const apiModuleAwaited = await api.module;
 
     const apiMethod = apiModuleAwaited.api.action;
@@ -177,17 +203,12 @@ async function _executeCore<Path extends keyof (typeof schema)["apiMethodsTypeSc
     result = { value: await apiMethod(params, context) };
 
     // after execute middleware
-    for (const m of _afterExecuteMiddlewares) {
-      await m.middleware(context, result);
-    }
+    await MiddlewareEvent.handle("afterExecute", [context, result]);
   } catch (error: any) {
     const errorResult = hanldeCatchError(error, executeId);
-    runtime.execute.executeIds.delete(executeId);
 
     return errorResult;
   }
-
-  runtime.execute.executeIds.delete(executeId);
 
   return {
     executeId,
@@ -195,6 +216,20 @@ async function _executeCore<Path extends keyof (typeof schema)["apiMethodsTypeSc
     data: result.value
   };
 }
+
+async function _executeToJson<Path extends keyof (typeof schema)["apiMethodsTypeSchema"]>(path: Path, params: Parameters<(typeof schema)["apiMethodsTypeSchema"][Path]["api"]["action"]>[0] | string, headersInit: Record<string, string> | Headers = {}, options?: ExecuteOptions): Promise<string> {
+  const resultsRaw = await _execute(path, params, headersInit, options);
+  const results = await (await schema.apiValidator.validate[path]()).results(TSON.encode(resultsRaw));
+  return results;
+}
+
+async function _executeCoreToJson<Path extends keyof (typeof schema)["apiMethodsTypeSchema"]>(path: Path, params: Parameters<(typeof schema)["apiMethodsTypeSchema"][Path]["api"]["action"]>[0] | string, headersInit: Record<string, string> | Headers = {}, options: ExecuteCoreOptions): Promise<string> {
+  const resultsRaw = await _executeCore(path, params, headersInit, options);
+  const results = await (await schema.apiValidator.validate[path]()).results(TSON.encode(resultsRaw));
+  return results;
+}
+
+const apis = new Map<string, any>();
 
 export type ExecuteResult<Result> = ExecuteResultSuccess<Result> | ExecuteResultFail;
 
@@ -228,6 +263,7 @@ export type ExecuteCoreOptions = Mixin<
   ExecuteOptions,
   {
     executeId: string;
+    logger: Logger;
     onAfterHeaders?: (headers: Headers) => void | Promise<void>;
   }
 >;

@@ -1,7 +1,6 @@
-import { defineApi, defineApiTest } from "loongbao";
 import type typia from "typia";
+import { defineApi, defineApiTest } from "loongbao";
 import { useDrizzle } from "../../uses/drizzle";
-import { users } from "../../databases/users";
 
 /**
  * This is an API that greets you!

@@ -5,12 +5,12 @@ import { useLogger, type ExecuteId, type ExecuteResult } from "..";
 export function hanldeCatchError(error: any, executeId: ExecuteId): ExecuteResult<any> {
   const logger = useLogger(executeId);
 
-  if (error.stack) logger.error(error.stack);
-  else logger.error(error);
   logger.error("\nError Data: " + JSON.stringify(error));
+  if (error.stack) logger.error("\nError Stack: ", error.stack);
+  else logger.error("\nError Stack: ", error);
 
-  if (error.name !== "FailError") {
-    // If it is not FailError, it is considered an internal server error that should not be exposed
+  if (error.name !== "LoongbaoReject") {
+    // If it is not LoongbaoReject, it is considered an internal server error that should not be exposed
     logger.error(`FailCode: internal-server-error`);
 
     return {

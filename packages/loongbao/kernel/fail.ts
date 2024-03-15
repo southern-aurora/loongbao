@@ -1,10 +1,10 @@
 import { failCode } from "../../../src/fail-code";
 
-export function defineFail<Code extends keyof typeof failCode, FailData extends (typeof failCode)[Code]>(code: Code, data: Parameters<FailData>[0]) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function reject<Code extends keyof typeof failCode, FailData extends (typeof failCode)[Code]>(code: Code, data: Parameters<FailData>[0]) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
   const message = failCode[code]?.(data as any) ?? "";
   const error = {
-    name: "FailError",
+    name: "LoongbaoReject",
     code,
     message,
     data,
@@ -12,10 +12,11 @@ export function defineFail<Code extends keyof typeof failCode, FailData extends 
   };
   Error.captureStackTrace(error);
   error.stack = error.stack.replace(/\n.*\n/, "\n");
+
   return error;
 }
 
-export type FailError = ReturnType<typeof defineFail>;
+export type LoongbaoReject = ReturnType<typeof reject>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type LoongbaoFailCode = Record<string, (arg: any) => string>;

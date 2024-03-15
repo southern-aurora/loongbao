@@ -15,7 +15,7 @@ API 是实际业务逻辑的入口。
 除了名为 `api.ts` 的文件外，其他文件都属于私有文件，不会被自动加载。您可以在 `api.ts` 中使用 `import` 来引入其他文件，以实现代码的拆分和组织。
 
 ```ts
-import { defineApi, defineFail } from "loongbao";
+import { defineApi, reject } from "loongbao";
 
 export const foo = defineApi({
   meta: {
@@ -51,7 +51,7 @@ export const foo = defineApi({
 您还可以利用 [Typia](https://typia.io/docs/validators/tags/) 实现更为复杂的校验功能。
 
 ```ts
-import { defineApi, defineFail } from "loongbao";
+import { defineApi, reject } from "loongbao";
 
 export const foo = defineApi({
   meta: {

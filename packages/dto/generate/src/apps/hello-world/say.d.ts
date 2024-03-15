@@ -7,9 +7,9 @@ export declare const api: {
     meta: {};
     action(params: {
         by?: string & typia.tags.MinLength<2> & typia.tags.MaxLength<16>;
-    }, context: import("loongbao").FrameworkContext): {
+    }, context: import("loongbao").FrameworkContext): Promise<{
         youSay: string;
-    };
+    }>;
 } & {
     isApi: true;
 };
@@ -18,9 +18,9 @@ export declare const test: {
         meta: {};
         action(params: {
             by?: string & typia.tags.MinLength<2> & typia.tags.MaxLength<16>;
-        }, context: import("loongbao").FrameworkContext): {
+        }, context: import("loongbao").FrameworkContext): Promise<{
             youSay: string;
-        };
+        }>;
     } & {
         isApi: true;
     }>[];

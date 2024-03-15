@@ -32,5 +32,5 @@ export const routerHandler = async (path: string, fullurl: URL): Promise<false |
 请注意，此方法的优先级永远低于 Loongbao 自动生成的路由，这意味着您无法禁止某个 API 的访问。这样设计的目的是为了确保您尽量只在此处编写路由匹配规则。如果您需要对某个 API 进行授权才能访问，请使用 [中间件](/old/docs/middleware.md) 功能。如果您需要禁止直接调用某个 API 本身，而通过此处编写的匹配规则仍然可以间接访问该 API，请在 API 本身的代码中编写判断逻辑，并在适当的位置使其失败并返回 "not-found"。
 
 ```ts
-throw defineFail("not-found", undefined);
+throw reject("not-found", undefined);
 ```

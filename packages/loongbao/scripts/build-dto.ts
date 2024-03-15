@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { cwd, platform } from "node:process";
 import { exec as nodeExec } from "node:child_process";
-import { removeDir } from "../util/remove-dir";
+import { removeDir } from "../utils/remove-dir";
 import { join } from "node:path";
 import { copyFile, mkdir } from "node:fs/promises";
 

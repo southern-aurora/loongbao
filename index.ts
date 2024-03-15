@@ -9,7 +9,7 @@ export const loongbao = await createLoongbaoApp({
   middlewares: () => [httpIOConsoleLog()]
 });
 
-console.warn("RUN_MODE", configFramework.loongbaoRunMode);
+console.log("RUN_MODE", configFramework.loongbaoRunMode);
 
 if (configFramework.loongbaoRunMode === "DEFAULT") {
   // start http server

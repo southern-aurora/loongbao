@@ -1,14 +1,11 @@
-/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument */
 
 import { argv, exit } from "node:process";
 import { generateApp } from "./generate/generate-app";
-import { generateDatabase } from "./generate/generate-database";
-
 console.log("Loongbao Quick Generating..");
 
 export async function generatePartial(path?: string) {
   await generateApp();
-  await generateDatabase();
 }
 
 await generatePartial(...(argv.slice(3) as any));

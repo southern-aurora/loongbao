@@ -16,6 +16,22 @@ scripts = ['''
     && npm publish --access public
 ''']
 
+["publish:redis"]
+commands = ["publish:redis", "p:r"]
+scripts = ['''
+    cd ./packages/loongbao-redis
+    && npm version patch
+    && npm publish --access public
+''']
+
+["publish:drizzle"]
+commands = ["publish:drizzle", "p:d"]
+scripts = ['''
+    cd ./packages/loongbao-drizzle
+    && npm version patch
+    && npm publish --access public
+''']
+
 ["publish:client"]
 commands = ["publish:client", "p:c"]
 scripts = ['''

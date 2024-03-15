@@ -18,6 +18,6 @@ console.log("Loongbao Database Generating..");
 
 await generate();
 
-console.log("\n✅ Loongbao Database Generated!");
+console.log("\n✅ Loongbao Database Generated!\n");
 
 exit(0);

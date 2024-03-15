@@ -1,4 +1,4 @@
-/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-argument, no-console, @typescript-eslint/no-explicit-any */
 import { exit } from "node:process";
 import schema from "../../../generate/api-schema";
 import { type LoongbaoApp } from "..";

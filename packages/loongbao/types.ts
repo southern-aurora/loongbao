@@ -20,7 +20,7 @@ export type Fail<FailCode extends keyof FailEnumerates> = {
 };
 
 export type LoongbaoMeta = {
-  enableResultsValidate?: boolean;
+  //
 };
 
 export type Cookbook = Record<string, CookbookItem>;

@@ -45,7 +45,7 @@ export const test = defineApi({
 ```ts
 // file: /src/bootstrap/middleware-allow-methods.ts
 
-import { defineFail, useMeta, useMiddleware } from "loongbao";
+import { reject, useMeta, useMiddleware } from "loongbao";
 
 export default function () {
   const middleware = useMiddleware(0);
@@ -55,7 +55,7 @@ export default function () {
     const allowMethods: Array<string> = meta.allowMethods;
 
     if (!allowMethods.includes(detail.request.method)) {
-      throw defineFail("not-allow-method", undefined);
+      throw reject("not-allow-method", undefined);
     }
   });
 }
